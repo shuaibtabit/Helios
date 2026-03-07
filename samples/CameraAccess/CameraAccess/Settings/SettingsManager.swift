@@ -12,6 +12,7 @@ final class SettingsManager {
     case openClawHookToken
     case openClawGatewayToken
     case geminiSystemPrompt
+    case heliosDomain
     case webrtcSignalingURL
     case speakerOutputEnabled
   }
@@ -28,6 +29,11 @@ final class SettingsManager {
   var geminiSystemPrompt: String {
     get { defaults.string(forKey: Key.geminiSystemPrompt.rawValue) ?? GeminiConfig.defaultSystemInstruction }
     set { defaults.set(newValue, forKey: Key.geminiSystemPrompt.rawValue) }
+  }
+
+  var heliosDomain: HeliosDomain {
+    get { HeliosDomain(rawValue: defaults.string(forKey: Key.heliosDomain.rawValue) ?? "") ?? .cooking }
+    set { defaults.set(newValue.rawValue, forKey: Key.heliosDomain.rawValue) }
   }
 
   // MARK: - OpenClaw
@@ -72,7 +78,7 @@ final class SettingsManager {
   // MARK: - Reset
 
   func resetAll() {
-    for key in [Key.geminiAPIKey, .geminiSystemPrompt, .openClawHost, .openClawPort,
+    for key in [Key.geminiAPIKey, .geminiSystemPrompt, .heliosDomain, .openClawHost, .openClawPort,
                 .openClawHookToken, .openClawGatewayToken, .webrtcSignalingURL,
                 .speakerOutputEnabled] {
       defaults.removeObject(forKey: key.rawValue)

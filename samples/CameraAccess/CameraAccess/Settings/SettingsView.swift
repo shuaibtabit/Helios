@@ -10,6 +10,7 @@ struct SettingsView: View {
   @State private var openClawHookToken: String = ""
   @State private var openClawGatewayToken: String = ""
   @State private var geminiSystemPrompt: String = ""
+  @State private var heliosDomain: HeliosDomain = .cooking
   @State private var webrtcSignalingURL: String = ""
   @State private var speakerOutputEnabled: Bool = false
   @State private var showResetConfirmation = false
@@ -29,10 +30,14 @@ struct SettingsView: View {
           }
         }
 
-        Section(header: Text("System Prompt"), footer: Text("Customize the AI assistant's behavior and personality. Changes take effect on the next Gemini session.")) {
-          TextEditor(text: $geminiSystemPrompt)
-            .font(.system(.body, design: .monospaced))
-            .frame(minHeight: 200)
+        Section(header: Text("Helios Domain"), footer: Text("Select the AI guidance domain. Changes take effect on the next Gemini session.")) {
+          Picker("Domain", selection: $heliosDomain) {
+            ForEach(HeliosDomain.allCases) { domain in
+              Label(domain.displayName, systemImage: domain.icon)
+                .tag(domain)
+            }
+          }
+          .pickerStyle(.segmented)
         }
 
         Section(header: Text("OpenClaw"), footer: Text("Connect to an OpenClaw gateway running on your Mac for agentic tool-calling.")) {
@@ -135,6 +140,7 @@ struct SettingsView: View {
   private func loadCurrentValues() {
     geminiAPIKey = settings.geminiAPIKey
     geminiSystemPrompt = settings.geminiSystemPrompt
+    heliosDomain = settings.heliosDomain
     openClawHost = settings.openClawHost
     openClawPort = String(settings.openClawPort)
     openClawHookToken = settings.openClawHookToken
@@ -146,6 +152,7 @@ struct SettingsView: View {
   private func save() {
     settings.geminiAPIKey = geminiAPIKey.trimmingCharacters(in: .whitespacesAndNewlines)
     settings.geminiSystemPrompt = geminiSystemPrompt.trimmingCharacters(in: .whitespacesAndNewlines)
+    settings.heliosDomain = heliosDomain
     settings.openClawHost = openClawHost.trimmingCharacters(in: .whitespacesAndNewlines)
     if let port = Int(openClawPort.trimmingCharacters(in: .whitespacesAndNewlines)) {
       settings.openClawPort = port

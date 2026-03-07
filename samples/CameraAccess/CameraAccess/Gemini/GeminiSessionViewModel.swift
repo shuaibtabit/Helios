@@ -11,12 +11,15 @@ class GeminiSessionViewModel: ObservableObject {
   @Published var aiTranscript: String = ""
   @Published var toolCallStatus: ToolCallStatus = .idle
   @Published var openClawConnectionState: OpenClawConnectionState = .notConfigured
+  let taskStateManager = TaskStateManager()
   private let geminiService = GeminiLiveService()
   private let openClawBridge = OpenClawBridge()
   private var toolCallRouter: ToolCallRouter?
   private let audioManager = AudioManager()
   private var lastVideoFrameTime: Date = .distantPast
   private var stateObservation: Task<Void, Never>?
+  private var turnTextBuffer = ""
+  private var frameCount = 0
 
   var streamingMode: StreamingMode = .glasses
 
@@ -50,9 +53,18 @@ class GeminiSessionViewModel: ObservableObject {
       self?.audioManager.stopPlayback()
     }
 
+    geminiService.onTextReceived = { [weak self] text in
+      guard let self else { return }
+      Task { @MainActor in
+        self.turnTextBuffer += text
+      }
+    }
+
     geminiService.onTurnComplete = { [weak self] in
       guard let self else { return }
       Task { @MainActor in
+        self.extractAndProcessState(from: self.turnTextBuffer)
+        self.turnTextBuffer = ""
         // Clear user transcript when AI finishes responding
         self.userTranscript = ""
       }
@@ -70,6 +82,7 @@ class GeminiSessionViewModel: ObservableObject {
       guard let self else { return }
       Task { @MainActor in
         self.aiTranscript += text
+        self.turnTextBuffer += text
       }
     }
 
@@ -183,7 +196,68 @@ class GeminiSessionViewModel: ObservableObject {
     let now = Date()
     guard now.timeIntervalSince(lastVideoFrameTime) >= GeminiConfig.videoFrameInterval else { return }
     lastVideoFrameTime = now
+
+    frameCount += 1
+    var frameContext = "Frame \(frameCount)."
+    if let prevState = taskStateManager.currentState,
+       let data = try? JSONEncoder().encode(prevState),
+       let json = String(data: data, encoding: .utf8) {
+      frameContext += " Previous state: \(json)"
+    }
+    if let prediction = taskStateManager.predictedSecondsToAction {
+      frameContext += " Predicted seconds to action: \(Int(prediction))."
+    }
+    if taskStateManager.isAccelerating() {
+      frameContext += " Urgency is ACCELERATING."
+    }
+    geminiService.sendTextContext(frameContext)
     geminiService.sendVideoFrame(image: image)
+  }
+
+  func switchDomain(_ domain: HeliosDomain) async {
+    SettingsManager.shared.heliosDomain = domain
+    taskStateManager.activeDomain = domain
+    taskStateManager.reset()
+    frameCount = 0
+    turnTextBuffer = ""
+    if isGeminiActive {
+      stopSession()
+      try? await Task.sleep(nanoseconds: 500_000_000)
+      await startSession()
+    }
+  }
+
+  // MARK: - JSON State Parsing
+
+  private func extractAndProcessState(from text: String) {
+    guard !text.isEmpty else { return }
+
+    var jsonString: String?
+
+    // Try ```json ... ``` block first
+    if let startRange = text.range(of: "```json"),
+       let endRange = text.range(of: "```", range: startRange.upperBound..<text.endIndex) {
+      jsonString = String(text[startRange.upperBound..<endRange.lowerBound])
+    }
+
+    // Fallback: first { to last }
+    if jsonString == nil,
+       let firstBrace = text.firstIndex(of: "{"),
+       let lastBrace = text.lastIndex(of: "}") {
+      jsonString = String(text[firstBrace...lastBrace])
+    }
+
+    guard let jsonString, let data = jsonString.data(using: .utf8) else { return }
+
+    let decoder = JSONDecoder()
+    decoder.keyDecodingStrategy = .convertFromSnakeCase
+    do {
+      let state = try decoder.decode(TaskState.self, from: data)
+      taskStateManager.updateState(state)
+      NSLog("[Helios] State: stage=%@ urgency=%.2f", state.stage, state.urgency)
+    } catch {
+      NSLog("[Helios] Failed to decode TaskState: %@", error.localizedDescription)
+    }
   }
 
 }

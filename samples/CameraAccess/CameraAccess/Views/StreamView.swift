@@ -51,11 +51,37 @@ struct StreamView: View {
           .foregroundColor(.white)
       }
 
-      // Gemini status overlay (top) + speaking indicator
+      // Gemini status overlay (top) + Helios overlay + speaking indicator
       if geminiVM.isGeminiActive {
         VStack {
-          GeminiStatusBar(geminiVM: geminiVM)
-          Spacer()
+          HStack {
+            GeminiStatusBar(geminiVM: geminiVM)
+            Spacer()
+            // Domain toggle pill
+            Button {
+              Task {
+                let allDomains = HeliosDomain.allCases
+                let currentIndex = allDomains.firstIndex(of: geminiVM.taskStateManager.activeDomain) ?? 0
+                let nextIndex = (currentIndex + 1) % allDomains.count
+                await geminiVM.switchDomain(allDomains[nextIndex])
+              }
+            } label: {
+              HStack(spacing: 6) {
+                Image(systemName: geminiVM.taskStateManager.activeDomain.icon)
+                  .font(.system(size: 12))
+                Text(geminiVM.taskStateManager.activeDomain.displayName)
+                  .font(.system(size: 12, weight: .medium))
+              }
+              .foregroundColor(.white)
+              .padding(.horizontal, 12)
+              .padding(.vertical, 6)
+              .background(Color.blue.opacity(0.6))
+              .cornerRadius(16)
+            }
+          }
+
+          // Helios state overlay
+          HeliosOverlayView(stateManager: geminiVM.taskStateManager)
 
           VStack(spacing: 8) {
             if !geminiVM.userTranscript.isEmpty || !geminiVM.aiTranscript.isEmpty {

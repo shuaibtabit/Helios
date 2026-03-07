@@ -20,6 +20,7 @@ class GeminiLiveService: ObservableObject {
   var onDisconnected: ((String?) -> Void)?
   var onInputTranscription: ((String) -> Void)?
   var onOutputTranscription: ((String) -> Void)?
+  var onTextReceived: ((String) -> Void)?
   var onToolCall: ((GeminiToolCall) -> Void)?
   var onToolCallCancellation: ((GeminiToolCallCancellation) -> Void)?
 
@@ -151,6 +152,19 @@ class GeminiLiveService: ObservableObject {
   func sendToolResponse(_ response: [String: Any]) {
     sendQueue.async { [weak self] in
       self?.sendJSON(response)
+    }
+  }
+
+  func sendTextContext(_ text: String) {
+    guard connectionState == .ready else { return }
+    sendQueue.async { [weak self] in
+      let json: [String: Any] = [
+        "clientContent": [
+          "turns": [["role": "user", "parts": [["text": text]]]],
+          "turnComplete": false
+        ]
+      ]
+      self?.sendJSON(json)
     }
   }
 
@@ -307,6 +321,7 @@ class GeminiLiveService: ObservableObject {
             onAudioReceived?(audioData)
           } else if let text = part["text"] as? String {
             NSLog("[Gemini] %@", text)
+            onTextReceived?(text)
           }
         }
       }
