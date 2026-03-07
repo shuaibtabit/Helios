@@ -17,6 +17,7 @@ class DataCenterCoordinator: ObservableObject {
     private let netboxService: NetBoxService
     private let redfishService: RedfishService
     private let useMockData: Bool
+    private let mockScenario: MockDataCenterScenarios.Scenario
 
     // MARK: - Monitoring
 
@@ -32,6 +33,7 @@ class DataCenterCoordinator: ObservableObject {
         mockScenario: MockDataCenterScenarios.Scenario = .healthy
     ) {
         self.useMockData = useMockData
+        self.mockScenario = mockScenario
 
         if useMockData {
             self.netboxService = NetBoxService(useMockData: true)
@@ -90,6 +92,12 @@ class DataCenterCoordinator: ObservableObject {
     }
 
     func refreshInventory() async {
+        if useMockData {
+            // Use scenario-aware generator that applies per-device health correctly
+            inventory = MockDataCenterScenarios.generateInventory(scenario: mockScenario)
+            return
+        }
+
         await netboxService.fetchAll()
 
         let devices = netboxService.devices
@@ -218,6 +226,33 @@ class DataCenterCoordinator: ObservableObject {
         }
 
         context += String(repeating: "=", count: 60) + "\n"
+
+        return context
+    }
+
+    /// Compact context for per-frame injection (avoids flooding Gemini with repeated full inventory)
+    func generateCompactContext() -> String {
+        guard let inventory = inventory else {
+            return "DC: No data"
+        }
+
+        var context = "DC STATUS: \(inventory.totalDevices) devices"
+        context += " | H:\(inventory.healthyDevices) D:\(inventory.degradedDevices) C:\(inventory.criticalDevices) O:\(inventory.offlineDevices)"
+
+        let problemDevices = inventory.devices.filter { device in
+            device.healthStatus?.hasIssues == true || device.healthStatus?.overallHealth == .offline
+        }
+
+        if !problemDevices.isEmpty {
+            context += " | ISSUES:"
+            for device in problemDevices.prefix(5) {
+                let health = device.healthStatus?.overallHealth.rawValue ?? "?"
+                context += " \(device.name)[\(health)]"
+                if let issue = device.healthStatus?.criticalIssues.first {
+                    context += "(\(issue.message))"
+                }
+            }
+        }
 
         return context
     }

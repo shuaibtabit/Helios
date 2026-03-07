@@ -128,10 +128,11 @@ class NetBoxService: ObservableObject {
             ipAddresses = fetchedIPs
         }
 
-        let hasError = [results.0, results.1, results.2, results.3, results.4].contains { result in
+        func isFailure<T>(_ result: Result<T, Error>) -> Bool {
             if case .failure = result { return true }
             return false
         }
+        let hasError = isFailure(results.0) || isFailure(results.1) || isFailure(results.2) || isFailure(results.3) || isFailure(results.4)
 
         if hasError {
             connectionState = .error("Failed to fetch some NetBox data")

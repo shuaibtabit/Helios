@@ -19,6 +19,7 @@ final class SettingsManager {
     case netboxAPIToken
     case redfishEnabled
     case dataCenterMockMode
+    case dataCenterMockScenario
   }
 
   private init() {}
@@ -106,13 +107,21 @@ final class SettingsManager {
     set { defaults.set(newValue, forKey: Key.dataCenterMockMode.rawValue) }
   }
 
+  var dataCenterMockScenario: MockDataCenterScenarios.Scenario {
+    get {
+      let raw = defaults.string(forKey: Key.dataCenterMockScenario.rawValue) ?? "mixedHealth"
+      return MockDataCenterScenarios.Scenario.from(raw) ?? .mixedHealth
+    }
+    set { defaults.set(newValue.rawString, forKey: Key.dataCenterMockScenario.rawValue) }
+  }
+
   // MARK: - Reset
 
   func resetAll() {
     for key in [Key.geminiAPIKey, .geminiSystemPrompt, .heliosDomain, .openClawHost, .openClawPort,
                 .openClawHookToken, .openClawGatewayToken, .webrtcSignalingURL,
                 .speakerOutputEnabled, .netboxBaseURL, .netboxAPIToken, .redfishEnabled,
-                .dataCenterMockMode] {
+                .dataCenterMockMode, .dataCenterMockScenario] {
       defaults.removeObject(forKey: key.rawValue)
     }
   }

@@ -182,9 +182,16 @@ class GeminiSessionViewModel: ObservableObject {
       dataCenterCoordinator = DataCenterCoordinator(
         useMockData: mockMode,
         netboxBaseURL: mockMode ? "" : SettingsManager.shared.netboxBaseURL,
-        netboxAPIToken: mockMode ? "" : SettingsManager.shared.netboxAPIToken
+        netboxAPIToken: mockMode ? "" : SettingsManager.shared.netboxAPIToken,
+        mockScenario: SettingsManager.shared.dataCenterMockScenario
       )
       await dataCenterCoordinator?.startMonitoring(refreshInterval: 30)
+      // Send initial datacenter context to prime Gemini
+      if let coordinator = dataCenterCoordinator, coordinator.inventory != nil {
+        let initialContext = "DATACENTER SESSION START. " + coordinator.generateAIContext()
+        geminiService.sendTextContext(initialContext)
+        NSLog("[Helios] Sent initial datacenter context (%d chars)", initialContext.count)
+      }
     }
   }
 
@@ -228,8 +235,7 @@ class GeminiSessionViewModel: ObservableObject {
     // Add datacenter context if in datacenter domain
     if taskStateManager.activeDomain == .dataCenter,
        let coordinator = dataCenterCoordinator {
-      let dcContext = coordinator.generateAIContext()
-      frameContext += " \(dcContext)"
+      frameContext += " \(coordinator.generateCompactContext())"
     }
 
     geminiService.sendTextContext(frameContext)

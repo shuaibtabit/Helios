@@ -17,6 +17,7 @@ struct SettingsView: View {
   @State private var netboxAPIToken: String = ""
   @State private var redfishEnabled: Bool = false
   @State private var dataCenterMockMode: Bool = true
+  @State private var dataCenterMockScenario: MockDataCenterScenarios.Scenario = .mixedHealth
   @State private var showResetConfirmation = false
 
   var body: some View {
@@ -106,6 +107,14 @@ struct SettingsView: View {
         Section(header: Text("DataCenter APIs"), footer: Text("Configure NetBox and Redfish integration for datacenter domain. Mock mode uses realistic demo data.")) {
           Toggle("Use Mock Data", isOn: $dataCenterMockMode)
 
+          if dataCenterMockMode {
+            Picker("Demo Scenario", selection: $dataCenterMockScenario) {
+              ForEach(MockDataCenterScenarios.Scenario.allCases, id: \.rawString) { scenario in
+                Text(scenario.displayName).tag(scenario)
+              }
+            }
+          }
+
           if !dataCenterMockMode {
             VStack(alignment: .leading, spacing: 4) {
               Text("NetBox URL")
@@ -184,6 +193,7 @@ struct SettingsView: View {
     netboxAPIToken = settings.netboxAPIToken
     redfishEnabled = settings.redfishEnabled
     dataCenterMockMode = settings.dataCenterMockMode
+    dataCenterMockScenario = settings.dataCenterMockScenario
   }
 
   private func save() {
@@ -202,5 +212,6 @@ struct SettingsView: View {
     settings.netboxAPIToken = netboxAPIToken.trimmingCharacters(in: .whitespacesAndNewlines)
     settings.redfishEnabled = redfishEnabled
     settings.dataCenterMockMode = dataCenterMockMode
+    settings.dataCenterMockScenario = dataCenterMockScenario
   }
 }

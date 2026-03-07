@@ -6,7 +6,7 @@ struct MockDataCenterScenarios {
 
     // MARK: - Scenario Types
 
-    enum Scenario {
+    enum Scenario: CaseIterable {
         case healthy
         case degradedCooling
         case serverDown
@@ -29,6 +29,32 @@ struct MockDataCenterScenarios {
             case .mixedHealth:
                 return "Multiple issues across datacenter"
             }
+        }
+
+        var rawString: String {
+            switch self {
+            case .healthy: return "healthy"
+            case .degradedCooling: return "degradedCooling"
+            case .serverDown: return "serverDown"
+            case .powerIssue: return "powerIssue"
+            case .criticalTemperature: return "criticalTemperature"
+            case .mixedHealth: return "mixedHealth"
+            }
+        }
+
+        var displayName: String {
+            switch self {
+            case .healthy: return "Healthy"
+            case .degradedCooling: return "Cooling Issue"
+            case .serverDown: return "Server Down"
+            case .powerIssue: return "Power Failure"
+            case .criticalTemperature: return "Critical Temp"
+            case .mixedHealth: return "Mixed Health"
+            }
+        }
+
+        static func from(_ raw: String) -> Scenario? {
+            allCases.first { $0.rawString == raw }
         }
     }
 
