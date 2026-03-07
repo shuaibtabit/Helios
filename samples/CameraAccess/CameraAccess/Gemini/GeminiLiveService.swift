@@ -178,8 +178,7 @@ class GeminiLiveService: ObservableObject {
   }
 
   private func sendSetupMessage() {
-    let setup: [String: Any] = [
-      "setup": [
+    var setupConfig: [String: Any] = [
         "model": GeminiConfig.model,
         "generationConfig": [
           "responseModalities": ["AUDIO"],
@@ -190,11 +189,6 @@ class GeminiLiveService: ObservableObject {
         "systemInstruction": [
           "parts": [
             ["text": GeminiConfig.systemInstruction]
-          ]
-        ],
-        "tools": [
-          [
-            "functionDeclarations": ToolDeclarations.allDeclarations()
           ]
         ],
         "realtimeInputConfig": [
@@ -210,8 +204,16 @@ class GeminiLiveService: ObservableObject {
         ],
         "inputAudioTranscription": [:] as [String: Any],
         "outputAudioTranscription": [:] as [String: Any]
-      ]
     ]
+
+    // Only declare tools if OpenClaw gateway is configured
+    if GeminiConfig.isOpenClawConfigured {
+      setupConfig["tools"] = [
+        ["functionDeclarations": ToolDeclarations.allDeclarations()]
+      ]
+    }
+
+    let setup: [String: Any] = ["setup": setupConfig]
     sendJSON(setup)
   }
 
