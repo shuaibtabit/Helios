@@ -16,6 +16,7 @@ class GeminiSessionViewModel: ObservableObject {
   private let openClawBridge = OpenClawBridge()
   private var toolCallRouter: ToolCallRouter?
   private let audioManager = AudioManager()
+  var dataCenterCoordinator: DataCenterCoordinator?
   private var lastVideoFrameTime: Date = .distantPast
   private var stateObservation: Task<Void, Never>?
   private var turnTextBuffer = ""
@@ -174,6 +175,17 @@ class GeminiSessionViewModel: ObservableObject {
       connectionState = .disconnected
       return
     }
+
+    // Start DataCenter monitoring if in datacenter domain
+    if taskStateManager.activeDomain == .dataCenter {
+      let mockMode = SettingsManager.shared.dataCenterMockMode
+      dataCenterCoordinator = DataCenterCoordinator(
+        useMockData: mockMode,
+        netboxBaseURL: mockMode ? "" : SettingsManager.shared.netboxBaseURL,
+        netboxAPIToken: mockMode ? "" : SettingsManager.shared.netboxAPIToken
+      )
+      await dataCenterCoordinator?.startMonitoring(refreshInterval: 30)
+    }
   }
 
   func stopSession() {
@@ -183,6 +195,8 @@ class GeminiSessionViewModel: ObservableObject {
     geminiService.disconnect()
     stateObservation?.cancel()
     stateObservation = nil
+    dataCenterCoordinator?.stopMonitoring()
+    dataCenterCoordinator = nil
     isGeminiActive = false
     connectionState = .disconnected
     isModelSpeaking = false
@@ -210,6 +224,14 @@ class GeminiSessionViewModel: ObservableObject {
     if taskStateManager.isAccelerating() {
       frameContext += " Urgency is ACCELERATING."
     }
+
+    // Add datacenter context if in datacenter domain
+    if taskStateManager.activeDomain == .dataCenter,
+       let coordinator = dataCenterCoordinator {
+      let dcContext = coordinator.generateAIContext()
+      frameContext += " \(dcContext)"
+    }
+
     geminiService.sendTextContext(frameContext)
     geminiService.sendVideoFrame(image: image)
   }

@@ -80,8 +80,20 @@ struct StreamView: View {
             }
           }
 
-          // Helios state overlay
-          HeliosOverlayView(stateManager: geminiVM.taskStateManager)
+          HStack {
+            // Helios state overlay
+            HeliosOverlayView(stateManager: geminiVM.taskStateManager)
+
+            Spacer()
+
+            // DataCenter status overlay (when in datacenter domain)
+            if geminiVM.taskStateManager.activeDomain == .dataCenter {
+              DataCenterStatusOverlay(
+                inventory: geminiVM.dataCenterCoordinator?.inventory,
+                useMockData: SettingsManager.shared.dataCenterMockMode
+              )
+            }
+          }
 
           VStack(spacing: 8) {
             if !geminiVM.userTranscript.isEmpty || !geminiVM.aiTranscript.isEmpty {

@@ -13,6 +13,10 @@ struct SettingsView: View {
   @State private var heliosDomain: HeliosDomain = .cooking
   @State private var webrtcSignalingURL: String = ""
   @State private var speakerOutputEnabled: Bool = false
+  @State private var netboxBaseURL: String = ""
+  @State private var netboxAPIToken: String = ""
+  @State private var redfishEnabled: Bool = false
+  @State private var dataCenterMockMode: Bool = true
   @State private var showResetConfirmation = false
 
   var body: some View {
@@ -99,6 +103,35 @@ struct SettingsView: View {
           Toggle("Speaker Output", isOn: $speakerOutputEnabled)
         }
 
+        Section(header: Text("DataCenter APIs"), footer: Text("Configure NetBox and Redfish integration for datacenter domain. Mock mode uses realistic demo data.")) {
+          Toggle("Use Mock Data", isOn: $dataCenterMockMode)
+
+          if !dataCenterMockMode {
+            VStack(alignment: .leading, spacing: 4) {
+              Text("NetBox URL")
+                .font(.caption)
+                .foregroundColor(.secondary)
+              TextField("https://netbox.example.com", text: $netboxBaseURL)
+                .autocapitalization(.none)
+                .disableAutocorrection(true)
+                .keyboardType(.URL)
+                .font(.system(.body, design: .monospaced))
+            }
+
+            VStack(alignment: .leading, spacing: 4) {
+              Text("NetBox API Token")
+                .font(.caption)
+                .foregroundColor(.secondary)
+              TextField("API token", text: $netboxAPIToken)
+                .autocapitalization(.none)
+                .disableAutocorrection(true)
+                .font(.system(.body, design: .monospaced))
+            }
+
+            Toggle("Enable Redfish Monitoring", isOn: $redfishEnabled)
+          }
+        }
+
         Section {
           Button("Reset to Defaults") {
             showResetConfirmation = true
@@ -147,6 +180,10 @@ struct SettingsView: View {
     openClawGatewayToken = settings.openClawGatewayToken
     webrtcSignalingURL = settings.webrtcSignalingURL
     speakerOutputEnabled = settings.speakerOutputEnabled
+    netboxBaseURL = settings.netboxBaseURL
+    netboxAPIToken = settings.netboxAPIToken
+    redfishEnabled = settings.redfishEnabled
+    dataCenterMockMode = settings.dataCenterMockMode
   }
 
   private func save() {
@@ -161,5 +198,9 @@ struct SettingsView: View {
     settings.openClawGatewayToken = openClawGatewayToken.trimmingCharacters(in: .whitespacesAndNewlines)
     settings.webrtcSignalingURL = webrtcSignalingURL.trimmingCharacters(in: .whitespacesAndNewlines)
     settings.speakerOutputEnabled = speakerOutputEnabled
+    settings.netboxBaseURL = netboxBaseURL.trimmingCharacters(in: .whitespacesAndNewlines)
+    settings.netboxAPIToken = netboxAPIToken.trimmingCharacters(in: .whitespacesAndNewlines)
+    settings.redfishEnabled = redfishEnabled
+    settings.dataCenterMockMode = dataCenterMockMode
   }
 }

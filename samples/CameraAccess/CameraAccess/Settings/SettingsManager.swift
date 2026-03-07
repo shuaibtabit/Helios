@@ -15,6 +15,10 @@ final class SettingsManager {
     case heliosDomain
     case webrtcSignalingURL
     case speakerOutputEnabled
+    case netboxBaseURL
+    case netboxAPIToken
+    case redfishEnabled
+    case dataCenterMockMode
   }
 
   private init() {}
@@ -75,12 +79,40 @@ final class SettingsManager {
     set { defaults.set(newValue, forKey: Key.speakerOutputEnabled.rawValue) }
   }
 
+  // MARK: - DataCenter
+
+  var netboxBaseURL: String {
+    get { defaults.string(forKey: Key.netboxBaseURL.rawValue) ?? "" }
+    set { defaults.set(newValue, forKey: Key.netboxBaseURL.rawValue) }
+  }
+
+  var netboxAPIToken: String {
+    get { defaults.string(forKey: Key.netboxAPIToken.rawValue) ?? "" }
+    set { defaults.set(newValue, forKey: Key.netboxAPIToken.rawValue) }
+  }
+
+  var redfishEnabled: Bool {
+    get { defaults.bool(forKey: Key.redfishEnabled.rawValue) }
+    set { defaults.set(newValue, forKey: Key.redfishEnabled.rawValue) }
+  }
+
+  var dataCenterMockMode: Bool {
+    get {
+      if defaults.object(forKey: Key.dataCenterMockMode.rawValue) == nil {
+        return true
+      }
+      return defaults.bool(forKey: Key.dataCenterMockMode.rawValue)
+    }
+    set { defaults.set(newValue, forKey: Key.dataCenterMockMode.rawValue) }
+  }
+
   // MARK: - Reset
 
   func resetAll() {
     for key in [Key.geminiAPIKey, .geminiSystemPrompt, .heliosDomain, .openClawHost, .openClawPort,
                 .openClawHookToken, .openClawGatewayToken, .webrtcSignalingURL,
-                .speakerOutputEnabled] {
+                .speakerOutputEnabled, .netboxBaseURL, .netboxAPIToken, .redfishEnabled,
+                .dataCenterMockMode] {
       defaults.removeObject(forKey: key.rawValue)
     }
   }
