@@ -78,8 +78,8 @@ class WebRTCClient: NSObject {
   func createOffer(completion: @escaping (RTCSessionDescription) -> Void) {
     let constraints = RTCMediaConstraints(
       mandatoryConstraints: [
-        "OfferToReceiveAudio": "true",
-        "OfferToReceiveVideo": "true",
+        "OfferToReceiveAudio": "false",
+        "OfferToReceiveVideo": "false",
       ],
       optionalConstraints: nil
     )

@@ -263,27 +263,10 @@
       console.log('ICE servers config:', JSON.stringify(iceServers.map(s => s.urls)));
       pc = new RTCPeerConnection(config);
 
-      // Get mic AND camera for bidirectional audio+video
-      try {
-        localStream = await navigator.mediaDevices.getUserMedia({
-          audio: true,
-          video: { facingMode: 'user', width: { ideal: 640 }, height: { ideal: 480 } }
-        });
-        localStream.getTracks().forEach(t => pc.addTrack(t, localStream));
-        localVideoStream = localStream;
-        console.log('Camera + mic access granted');
-      } catch (e) {
-        // Fallback: try audio-only if camera denied
-        console.log('Camera denied, trying audio-only:', e.message);
-        localVideoStream = null;
-        try {
-          localStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-          localStream.getTracks().forEach(t => pc.addTrack(t, localStream));
-        } catch (e2) {
-          console.log('No mic or camera access');
-          localStream = null;
-        }
-      }
+      // Receive-only: no local mic or camera needed
+      localStream = null;
+      localVideoStream = null;
+      console.log('Viewer mode: receive-only (no local media)');
 
       pc.ontrack = (e) => {
         if (e.streams && e.streams[0]) {
@@ -340,74 +323,18 @@
       };
     }
 
-    // Show the appropriate video layout based on whether we have a local camera
+    // Show the remote stream fullscreen
     function showVideoLayout() {
-      if (localVideoStream && remoteStream) {
-        // PiP mode: both cameras available
-        document.getElementById('fallback-video').style.display = 'none';
-        document.getElementById('pip-container').style.display = 'block';
-
-        const mainVideo = document.getElementById('main-video');
-        const pipVideo = document.getElementById('pip-video');
-
-        // Default: main = remote (iOS glasses), pip = local (browser camera, mirrored)
-        mainVideo.srcObject = remoteStream;
-        mainVideo.muted = false;
-        pipVideo.srcObject = localVideoStream;
-        pipVideo.muted = true;
-        pipVideo.style.transform = 'scaleX(-1)';
-        isSwapped = false;
-      } else if (remoteStream) {
-        // No local camera: fallback to single video
+      if (remoteStream) {
         document.getElementById('pip-container').style.display = 'none';
         document.getElementById('fallback-video').style.display = 'block';
         document.getElementById('fallback-video').srcObject = remoteStream;
       }
     }
 
-    function swapVideos() {
-      const mainVideo = document.getElementById('main-video');
-      const pipVideo = document.getElementById('pip-video');
-
-      if (isSwapped) {
-        // Swap back to default: main = remote, pip = local
-        mainVideo.srcObject = remoteStream;
-        mainVideo.muted = false;
-        mainVideo.style.transform = '';
-        pipVideo.srcObject = localVideoStream;
-        pipVideo.muted = true;
-        pipVideo.style.transform = 'scaleX(-1)';
-      } else {
-        // Swap: main = local (mirrored), pip = remote
-        mainVideo.srcObject = localVideoStream;
-        mainVideo.muted = true;
-        mainVideo.style.transform = 'scaleX(-1)';
-        pipVideo.srcObject = remoteStream;
-        pipVideo.muted = false;
-        pipVideo.style.transform = '';
-      }
-      isSwapped = !isSwapped;
-    }
-
-    function toggleMic() {
-      if (!localStream) return;
-      const track = localStream.getAudioTracks()[0];
-      if (!track) return;
-      track.enabled = !track.enabled;
-      const btn = document.getElementById('mic-btn');
-      btn.textContent = track.enabled ? 'Mic: ON' : 'Mic: OFF';
-      btn.classList.toggle('muted', !track.enabled);
-    }
-
-    function toggleCam() {
-      if (!localVideoStream) return;
-      const track = localVideoStream.getVideoTracks()[0];
-      if (!track) return;
-      track.enabled = !track.enabled;
-      const btn = document.getElementById('cam-btn');
-      btn.textContent = track.enabled ? 'Cam: ON' : 'Cam: OFF';
-      btn.classList.toggle('muted', !track.enabled);
-    }
+    function swapVideos() {}
+    function toggleMic() {}
+    function toggleCam() {}
 
     function resetVideoElements() {
       document.getElementById('fallback-video').srcObject = null;
@@ -439,8 +366,8 @@
     }
 
     function showControls(visible) {
-      document.getElementById('mic-btn').style.display = visible ? 'inline-block' : 'none';
-      document.getElementById('cam-btn').style.display = (visible && localVideoStream) ? 'inline-block' : 'none';
+      document.getElementById('mic-btn').style.display = 'none';
+      document.getElementById('cam-btn').style.display = 'none';
       document.getElementById('disconnect-btn').style.display = visible ? 'inline-block' : 'none';
     }
 
