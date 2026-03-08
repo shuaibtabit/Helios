@@ -188,13 +188,13 @@ class GeminiSessionViewModel: ObservableObject {
           let domain = self.taskStateManager.activeDomain
           let prompt: String
           if domain == .cooking {
-            prompt = "Based on what you see right now, give a brief spoken update. If cooking is happening, include your seconds_est countdown. If you see eggs or a stove and haven't started guiding yet, proactively offer to help cook."
+            prompt = "Based on what you ACTUALLY SEE in this frame right now, give a brief spoken update. Only describe what is visually present — do not assume or hallucinate browning, color changes, or doneness you cannot see. If cooking, include your seconds_est countdown. If you see eggs or a stove and haven't started guiding yet, proactively offer to help cook."
           } else {
             prompt = "Based on what you see right now, give a brief spoken status update about the equipment or environment."
           }
           self.geminiService.sendTextTurn(prompt)
         }
-        try? await Task.sleep(nanoseconds: 12_000_000_000) // 12 seconds
+        try? await Task.sleep(nanoseconds: 15_000_000_000) // 15 seconds
       }
     }
 
