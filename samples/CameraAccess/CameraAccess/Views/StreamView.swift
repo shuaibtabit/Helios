@@ -70,12 +70,15 @@ struct StreamView: View {
                 Image(systemName: geminiVM.taskStateManager.activeDomain.icon)
                   .font(.system(size: 12))
                 Text(geminiVM.taskStateManager.activeDomain.displayName)
-                  .font(.system(size: 12, weight: .medium))
+                  .font(.system(size: 12, weight: .semibold))
+                Image(systemName: "chevron.right")
+                  .font(.system(size: 9, weight: .bold))
+                  .foregroundColor(.white.opacity(0.5))
               }
               .foregroundColor(.white)
               .padding(.horizontal, 12)
               .padding(.vertical, 6)
-              .background(Color.blue.opacity(0.6))
+              .background(.ultraThinMaterial)
               .cornerRadius(16)
             }
           }
@@ -107,14 +110,17 @@ struct StreamView: View {
 
             if geminiVM.isModelSpeaking {
               HStack(spacing: 8) {
-                Image(systemName: "speaker.wave.2.fill")
-                  .foregroundColor(.white)
-                  .font(.system(size: 14))
+                Image(systemName: "sparkles")
+                  .foregroundColor(.cyan)
+                  .font(.system(size: 13))
+                Text("Helios")
+                  .font(.system(size: 12, weight: .semibold))
+                  .foregroundColor(.white.opacity(0.8))
                 SpeakingIndicator()
               }
               .padding(.horizontal, 16)
               .padding(.vertical, 8)
-              .background(Color.black.opacity(0.5))
+              .background(.ultraThinMaterial)
               .cornerRadius(20)
             }
           }

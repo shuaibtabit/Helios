@@ -196,17 +196,18 @@ class GeminiSessionViewModel: ObservableObject {
   }
 
   func stopSession() {
+    isGeminiActive = false
+    connectionState = .disconnected
+    isModelSpeaking = false
     toolCallRouter?.cancelAll()
     toolCallRouter = nil
+    audioManager.stopPlayback()
     audioManager.stopCapture()
     geminiService.disconnect()
     stateObservation?.cancel()
     stateObservation = nil
     dataCenterCoordinator?.stopMonitoring()
     dataCenterCoordinator = nil
-    isGeminiActive = false
-    connectionState = .disconnected
-    isModelSpeaking = false
     userTranscript = ""
     aiTranscript = ""
     toolCallStatus = .idle
@@ -243,13 +244,16 @@ class GeminiSessionViewModel: ObservableObject {
   }
 
   func switchDomain(_ domain: HeliosDomain) async {
+    let wasActive = isGeminiActive
+    if wasActive {
+      stopSession()
+    }
     SettingsManager.shared.heliosDomain = domain
     taskStateManager.activeDomain = domain
     taskStateManager.reset()
     frameCount = 0
     turnTextBuffer = ""
-    if isGeminiActive {
-      stopSession()
+    if wasActive {
       try? await Task.sleep(nanoseconds: 500_000_000)
       await startSession()
     }

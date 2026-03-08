@@ -4,47 +4,62 @@ struct HeliosOverlayView: View {
   @ObservedObject var stateManager: TaskStateManager
 
   var body: some View {
-    VStack {
-      // Top row: domain badge (left) + stage badge (right)
-      HStack {
-        StatusPill(
-          color: .blue,
-          text: "\(stateManager.activeDomain.displayName)"
-        )
-
-        Spacer()
-
-        if let state = stateManager.currentState {
-          StatusPill(
-            color: urgencyColor(state.urgency),
-            text: state.stage.replacingOccurrences(of: "_", with: " ").capitalized
-          )
-        }
-      }
-
+    VStack(spacing: 0) {
       Spacer()
 
-      // Bottom: action prompt + prediction + urgency bar
+      // Bottom panel: action + countdown + urgency bar
       if let state = stateManager.currentState {
-        VStack(spacing: 8) {
+        VStack(spacing: 10) {
+          // Action callout
           if let action = state.action {
             Text(action.uppercased())
-              .font(.system(size: 20, weight: .bold))
-              .foregroundColor(.white)
-              .shadow(color: .black, radius: 4)
+              .font(.system(size: 22, weight: .heavy, design: .rounded))
+              .foregroundColor(urgencyColor(state.urgency))
+              .shadow(color: .black.opacity(0.8), radius: 6, x: 0, y: 2)
+              .multilineTextAlignment(.center)
           }
 
-          HStack(spacing: 12) {
-            if let seconds = stateManager.predictedSecondsToAction {
-              Text("~\(Int(seconds))s")
-                .font(.system(size: 16, weight: .semibold, design: .monospaced))
-                .foregroundColor(.white)
+          // Stage + countdown row
+          HStack(spacing: 16) {
+            // Stage pill
+            HStack(spacing: 6) {
+              Circle()
+                .fill(urgencyColor(state.urgency))
+                .frame(width: 8, height: 8)
+              Text(state.stage.replacingOccurrences(of: "_", with: " ").uppercased())
+                .font(.system(size: 11, weight: .bold, design: .monospaced))
+                .foregroundColor(.white.opacity(0.9))
             }
 
-            if stateManager.isAccelerating() {
-              Image(systemName: "arrow.up.right")
-                .font(.system(size: 14, weight: .bold))
-                .foregroundColor(.red)
+            Spacer()
+
+            // Countdown + acceleration
+            HStack(spacing: 6) {
+              if stateManager.isAccelerating() {
+                Image(systemName: "exclamationmark.triangle.fill")
+                  .font(.system(size: 12))
+                  .foregroundColor(.orange)
+              }
+
+              if let seconds = state.seconds_est {
+                HStack(spacing: 4) {
+                  Image(systemName: "timer")
+                    .font(.system(size: 12))
+                    .foregroundColor(.white.opacity(0.7))
+                  Text("\(seconds)s")
+                    .font(.system(size: 15, weight: .bold, design: .monospaced))
+                    .foregroundColor(.white)
+                }
+              } else if let predicted = stateManager.predictedSecondsToAction {
+                HStack(spacing: 4) {
+                  Image(systemName: "timer")
+                    .font(.system(size: 12))
+                    .foregroundColor(.white.opacity(0.7))
+                  Text("~\(Int(predicted))s")
+                    .font(.system(size: 15, weight: .bold, design: .monospaced))
+                    .foregroundColor(.white.opacity(0.8))
+                }
+              }
             }
           }
 
@@ -52,20 +67,33 @@ struct HeliosOverlayView: View {
           GeometryReader { geo in
             ZStack(alignment: .leading) {
               RoundedRectangle(cornerRadius: 4)
-                .fill(Color.white.opacity(0.2))
-                .frame(height: 8)
+                .fill(Color.white.opacity(0.15))
+                .frame(height: 6)
 
               RoundedRectangle(cornerRadius: 4)
-                .fill(urgencyColor(state.urgency))
-                .frame(width: geo.size.width * CGFloat(min(state.urgency, 1.0)), height: 8)
+                .fill(
+                  LinearGradient(
+                    colors: [urgencyColor(state.urgency).opacity(0.8), urgencyColor(state.urgency)],
+                    startPoint: .leading,
+                    endPoint: .trailing
+                  )
+                )
+                .frame(width: geo.size.width * CGFloat(min(state.urgency, 1.0)), height: 6)
+                .animation(.easeInOut(duration: 0.3), value: state.urgency)
             }
           }
-          .frame(height: 8)
+          .frame(height: 6)
         }
         .padding(.horizontal, 16)
-        .padding(.vertical, 12)
-        .background(Color.black.opacity(0.5))
-        .cornerRadius(12)
+        .padding(.vertical, 14)
+        .background(
+          RoundedRectangle(cornerRadius: 16)
+            .fill(.ultraThinMaterial)
+            .overlay(
+              RoundedRectangle(cornerRadius: 16)
+                .stroke(urgencyColor(state.urgency).opacity(0.3), lineWidth: 1)
+            )
+        )
       }
     }
   }
