@@ -19,6 +19,7 @@ class GeminiSessionViewModel: ObservableObject {
   var dataCenterCoordinator: DataCenterCoordinator?
   private var lastVideoFrameTime: Date = .distantPast
   private var stateObservation: Task<Void, Never>?
+  private var autoPromptTask: Task<Void, Never>?
   private var turnTextBuffer = ""
   private var frameCount = 0
 
@@ -176,6 +177,27 @@ class GeminiSessionViewModel: ObservableObject {
       return
     }
 
+    // Auto-prompt timer: trigger Gemini to speak proactively every ~10s
+    autoPromptTask = Task { [weak self] in
+      // Wait a few seconds for Gemini to receive first frames
+      try? await Task.sleep(nanoseconds: 5_000_000_000)
+      while !Task.isCancelled {
+        guard let self, self.isGeminiActive, self.connectionState == .ready else { break }
+        // Only auto-prompt when Gemini is NOT already speaking
+        if !self.geminiService.isModelSpeaking {
+          let domain = self.taskStateManager.activeDomain
+          let prompt: String
+          if domain == .cooking {
+            prompt = "Based on what you see right now, give a brief spoken update. If cooking is happening, include your seconds_est countdown. If you see eggs or a stove and haven't started guiding yet, proactively offer to help cook."
+          } else {
+            prompt = "Based on what you see right now, give a brief spoken status update about the equipment or environment."
+          }
+          self.geminiService.sendTextTurn(prompt)
+        }
+        try? await Task.sleep(nanoseconds: 12_000_000_000) // 12 seconds
+      }
+    }
+
     // Start DataCenter monitoring if in datacenter domain
     if taskStateManager.activeDomain == .dataCenter {
       let mockMode = SettingsManager.shared.dataCenterMockMode
@@ -206,6 +228,8 @@ class GeminiSessionViewModel: ObservableObject {
     geminiService.disconnect()
     stateObservation?.cancel()
     stateObservation = nil
+    autoPromptTask?.cancel()
+    autoPromptTask = nil
     dataCenterCoordinator?.stopMonitoring()
     dataCenterCoordinator = nil
     userTranscript = ""
