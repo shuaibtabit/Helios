@@ -210,7 +210,7 @@ struct ControlsView: View {
         }
       }
 
-      // Gemini AI button (disabled when WebRTC is active — audio conflict)
+      // Gemini AI button
       CircleButton(
         icon: geminiVM.isGeminiActive ? "waveform.circle.fill" : "waveform.circle",
         text: "AI"
@@ -223,10 +223,8 @@ struct ControlsView: View {
           }
         }
       }
-      .opacity(webrtcVM.isActive ? 0.4 : 1.0)
-      .disabled(webrtcVM.isActive)
 
-      // WebRTC Live Stream button (disabled when Gemini is active — audio conflict)
+      // WebRTC Live Stream button
       CircleButton(
         icon: webrtcVM.isActive
           ? "antenna.radiowaves.left.and.right.circle.fill"
@@ -241,8 +239,6 @@ struct ControlsView: View {
           }
         }
       }
-      .opacity(geminiVM.isGeminiActive ? 0.4 : 1.0)
-      .disabled(geminiVM.isGeminiActive)
     }
   }
 }
