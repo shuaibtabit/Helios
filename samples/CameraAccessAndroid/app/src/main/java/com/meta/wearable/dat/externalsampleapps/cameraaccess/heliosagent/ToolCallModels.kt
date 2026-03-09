@@ -1,4 +1,4 @@
-package com.meta.wearable.dat.externalsampleapps.cameraaccess.openclaw
+package com.meta.wearable.dat.externalsampleapps.cameraaccess.heliosagent
 
 import org.json.JSONArray
 import org.json.JSONObject
@@ -90,13 +90,13 @@ sealed class ToolCallStatus {
         get() = this is Executing
 }
 
-// OpenClaw Connection State
+// Helios Agent Connection State
 
-sealed class OpenClawConnectionState {
-    data object NotConfigured : OpenClawConnectionState()
-    data object Checking : OpenClawConnectionState()
-    data object Connected : OpenClawConnectionState()
-    data class Unreachable(val message: String) : OpenClawConnectionState()
+sealed class HeliosAgentConnectionState {
+    data object NotConfigured : HeliosAgentConnectionState()
+    data object Checking : HeliosAgentConnectionState()
+    data object Connected : HeliosAgentConnectionState()
+    data class Unreachable(val message: String) : HeliosAgentConnectionState()
 }
 
 // Tool Declarations (for Gemini setup message)

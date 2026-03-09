@@ -7,10 +7,10 @@ final class SettingsManager {
 
   private enum Key: String {
     case geminiAPIKey
-    case openClawHost
-    case openClawPort
-    case openClawHookToken
-    case openClawGatewayToken
+    case agentHost
+    case agentPort
+    case agentHookToken
+    case agentGatewayToken
     case geminiSystemPrompt
     case heliosDomain
     case webrtcSignalingURL
@@ -41,29 +41,29 @@ final class SettingsManager {
     set { defaults.set(newValue.rawValue, forKey: Key.heliosDomain.rawValue) }
   }
 
-  // MARK: - OpenClaw
+  // MARK: - Agent Gateway
 
-  var openClawHost: String {
-    get { defaults.string(forKey: Key.openClawHost.rawValue) ?? Secrets.openClawHost }
-    set { defaults.set(newValue, forKey: Key.openClawHost.rawValue) }
+  var agentHost: String {
+    get { defaults.string(forKey: Key.agentHost.rawValue) ?? Secrets.agentHost }
+    set { defaults.set(newValue, forKey: Key.agentHost.rawValue) }
   }
 
-  var openClawPort: Int {
+  var agentPort: Int {
     get {
-      let stored = defaults.integer(forKey: Key.openClawPort.rawValue)
-      return stored != 0 ? stored : Secrets.openClawPort
+      let stored = defaults.integer(forKey: Key.agentPort.rawValue)
+      return stored != 0 ? stored : Secrets.agentPort
     }
-    set { defaults.set(newValue, forKey: Key.openClawPort.rawValue) }
+    set { defaults.set(newValue, forKey: Key.agentPort.rawValue) }
   }
 
-  var openClawHookToken: String {
-    get { defaults.string(forKey: Key.openClawHookToken.rawValue) ?? Secrets.openClawHookToken }
-    set { defaults.set(newValue, forKey: Key.openClawHookToken.rawValue) }
+  var agentHookToken: String {
+    get { defaults.string(forKey: Key.agentHookToken.rawValue) ?? Secrets.agentHookToken }
+    set { defaults.set(newValue, forKey: Key.agentHookToken.rawValue) }
   }
 
-  var openClawGatewayToken: String {
-    get { defaults.string(forKey: Key.openClawGatewayToken.rawValue) ?? Secrets.openClawGatewayToken }
-    set { defaults.set(newValue, forKey: Key.openClawGatewayToken.rawValue) }
+  var agentGatewayToken: String {
+    get { defaults.string(forKey: Key.agentGatewayToken.rawValue) ?? Secrets.agentGatewayToken }
+    set { defaults.set(newValue, forKey: Key.agentGatewayToken.rawValue) }
   }
 
   // MARK: - WebRTC
@@ -118,8 +118,8 @@ final class SettingsManager {
   // MARK: - Reset
 
   func resetAll() {
-    for key in [Key.geminiAPIKey, .geminiSystemPrompt, .heliosDomain, .openClawHost, .openClawPort,
-                .openClawHookToken, .openClawGatewayToken, .webrtcSignalingURL,
+    for key in [Key.geminiAPIKey, .geminiSystemPrompt, .heliosDomain, .agentHost, .agentPort,
+                .agentHookToken, .agentGatewayToken, .webrtcSignalingURL,
                 .speakerOutputEnabled, .netboxBaseURL, .netboxAPIToken, .redfishEnabled,
                 .dataCenterMockMode, .dataCenterMockScenario] {
       defaults.removeObject(forKey: key.rawValue)

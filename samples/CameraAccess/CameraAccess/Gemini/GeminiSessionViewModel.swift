@@ -10,10 +10,10 @@ class GeminiSessionViewModel: ObservableObject {
   @Published var userTranscript: String = ""
   @Published var aiTranscript: String = ""
   @Published var toolCallStatus: ToolCallStatus = .idle
-  @Published var openClawConnectionState: OpenClawConnectionState = .notConfigured
+  @Published var agentConnectionState: HeliosAgentConnectionState = .notConfigured
   let taskStateManager = TaskStateManager()
   private let geminiService = GeminiLiveService()
-  private let openClawBridge = OpenClawBridge()
+  private let agentBridge = HeliosAgentBridge()
   private var toolCallRouter: ToolCallRouter?
   private let audioManager = AudioManager()
   var dataCenterCoordinator: DataCenterCoordinator?
@@ -98,12 +98,12 @@ class GeminiSessionViewModel: ObservableObject {
       }
     }
 
-    // Check OpenClaw connectivity and start fresh session
-    await openClawBridge.checkConnection()
-    openClawBridge.resetSession()
+    // Check Helios Agent connectivity and start fresh session
+    await agentBridge.checkConnection()
+    agentBridge.resetSession()
 
     // Wire tool call handling
-    toolCallRouter = ToolCallRouter(bridge: openClawBridge)
+    toolCallRouter = ToolCallRouter(bridge: agentBridge)
 
     geminiService.onToolCall = { [weak self] toolCall in
       guard let self else { return }
@@ -131,8 +131,8 @@ class GeminiSessionViewModel: ObservableObject {
         guard !Task.isCancelled else { break }
         self.connectionState = self.geminiService.connectionState
         self.isModelSpeaking = self.geminiService.isModelSpeaking
-        self.toolCallStatus = self.openClawBridge.lastToolCallStatus
-        self.openClawConnectionState = self.openClawBridge.connectionState
+        self.toolCallStatus = self.agentBridge.lastToolCallStatus
+        self.agentConnectionState = self.agentBridge.connectionState
       }
     }
 

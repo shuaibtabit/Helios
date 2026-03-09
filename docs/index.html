@@ -1,0 +1,1601 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Helios - AI-Powered Datacenter Intelligence</title>
+  <meta name="description" content="Helios: Multimodal AI assistant for datacenter engineers, powered by Gemini and Meta Ray-Ban smart glasses. See what techs see, know what APIs know.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --bg: #0a0a0f;
+      --bg-card: #12121a;
+      --bg-card-hover: #1a1a26;
+      --border: #1e1e2e;
+      --text: #e4e4ef;
+      --text-dim: #8888a0;
+      --text-muted: #555568;
+      --accent: #f59e0b;
+      --accent-glow: rgba(245, 158, 11, 0.15);
+      --accent2: #3b82f6;
+      --accent2-glow: rgba(59, 130, 246, 0.15);
+      --danger: #ef4444;
+      --danger-glow: rgba(239, 68, 68, 0.1);
+      --success: #22c55e;
+      --success-glow: rgba(34, 197, 94, 0.1);
+      --purple: #a855f7;
+      --cyan: #06b6d4;
+      --radius: 16px;
+      --radius-sm: 10px;
+      --font: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      --mono: 'JetBrains Mono', 'SF Mono', monospace;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: var(--font);
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Noise texture overlay */
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 9999;
+    }
+
+    /* ============ NAV ============ */
+    nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 1000;
+      padding: 16px 32px;
+      backdrop-filter: blur(20px) saturate(180%);
+      -webkit-backdrop-filter: blur(20px) saturate(180%);
+      background: rgba(10, 10, 15, 0.7);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+      transition: background 0.3s;
+    }
+    .nav-inner {
+      max-width: 1280px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .nav-logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+      color: var(--text);
+    }
+    .nav-logo svg { width: 28px; height: 28px; }
+    .nav-logo span {
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+    }
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 32px;
+      list-style: none;
+    }
+    .nav-links a {
+      color: var(--text-dim);
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 500;
+      transition: color 0.2s;
+    }
+    .nav-links a:hover { color: var(--text); }
+    .nav-cta {
+      background: var(--accent);
+      color: #000 !important;
+      padding: 8px 20px;
+      border-radius: 8px;
+      font-weight: 600 !important;
+      font-size: 13px !important;
+      transition: transform 0.2s, box-shadow 0.2s !important;
+    }
+    .nav-cta:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 20px var(--accent-glow);
+    }
+
+    /* ============ HERO ============ */
+    .hero {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      padding: 120px 24px 80px;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute;
+      top: -200px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 800px;
+      height: 800px;
+      background: radial-gradient(circle, var(--accent-glow) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .hero::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 600px;
+      height: 600px;
+      background: radial-gradient(circle, var(--accent2-glow) 0%, transparent 70%);
+      pointer-events: none;
+      animation: float 8s ease-in-out infinite alternate;
+    }
+    @keyframes float {
+      from { transform: translateX(-50%) translateY(0); }
+      to { transform: translateX(-50%) translateY(-40px); }
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(245, 158, 11, 0.08);
+      border: 1px solid rgba(245, 158, 11, 0.2);
+      color: var(--accent);
+      padding: 6px 16px;
+      border-radius: 100px;
+      font-size: 13px;
+      font-weight: 600;
+      margin-bottom: 32px;
+      position: relative;
+      z-index: 1;
+    }
+    .badge-dot {
+      width: 6px;
+      height: 6px;
+      background: var(--accent);
+      border-radius: 50%;
+      animation: pulse-dot 2s ease-in-out infinite;
+    }
+    @keyframes pulse-dot {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+
+    .hero h1 {
+      font-size: clamp(48px, 8vw, 96px);
+      font-weight: 900;
+      letter-spacing: -3px;
+      line-height: 0.95;
+      margin-bottom: 24px;
+      position: relative;
+      z-index: 1;
+    }
+    .hero h1 .gradient-text {
+      background: linear-gradient(135deg, var(--accent) 0%, #fbbf24 50%, var(--accent2) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .hero-sub {
+      font-size: clamp(16px, 2.5vw, 22px);
+      color: var(--text-dim);
+      max-width: 640px;
+      margin-bottom: 48px;
+      line-height: 1.5;
+      position: relative;
+      z-index: 1;
+      font-weight: 400;
+    }
+
+    .hero-actions {
+      display: flex;
+      gap: 16px;
+      position: relative;
+      z-index: 1;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    .btn-primary {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--accent);
+      color: #000;
+      padding: 14px 32px;
+      border-radius: 12px;
+      font-weight: 700;
+      font-size: 15px;
+      text-decoration: none;
+      transition: all 0.2s;
+      border: none;
+      cursor: pointer;
+    }
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 32px var(--accent-glow);
+    }
+    .btn-secondary {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: transparent;
+      color: var(--text);
+      padding: 14px 32px;
+      border-radius: 12px;
+      font-weight: 600;
+      font-size: 15px;
+      text-decoration: none;
+      border: 1px solid var(--border);
+      transition: all 0.2s;
+    }
+    .btn-secondary:hover {
+      background: var(--bg-card);
+      border-color: var(--text-muted);
+    }
+
+    .hero-stats {
+      display: flex;
+      gap: 48px;
+      margin-top: 80px;
+      position: relative;
+      z-index: 1;
+    }
+    .stat { text-align: center; }
+    .stat-value {
+      font-size: 32px;
+      font-weight: 800;
+      color: var(--text);
+      letter-spacing: -1px;
+    }
+    .stat-label {
+      font-size: 13px;
+      color: var(--text-muted);
+      font-weight: 500;
+      margin-top: 4px;
+    }
+
+    /* ============ SECTIONS ============ */
+    section {
+      padding: 120px 24px;
+      max-width: 1280px;
+      margin: 0 auto;
+    }
+
+    .section-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 16px;
+    }
+    .section-label::before {
+      content: '';
+      width: 20px;
+      height: 2px;
+      background: var(--accent);
+      border-radius: 1px;
+    }
+
+    .section-title {
+      font-size: clamp(32px, 5vw, 52px);
+      font-weight: 800;
+      letter-spacing: -2px;
+      line-height: 1.1;
+      margin-bottom: 16px;
+    }
+    .section-desc {
+      font-size: 18px;
+      color: var(--text-dim);
+      max-width: 600px;
+      margin-bottom: 64px;
+      line-height: 1.6;
+    }
+
+    /* ============ FEATURE GRID ============ */
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+      gap: 20px;
+    }
+    .feature-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 32px;
+      transition: all 0.3s;
+      position: relative;
+      overflow: hidden;
+    }
+    .feature-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, var(--accent), transparent);
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+    .feature-card:hover {
+      background: var(--bg-card-hover);
+      border-color: rgba(245, 158, 11, 0.15);
+      transform: translateY(-2px);
+    }
+    .feature-card:hover::before { opacity: 1; }
+
+    .feature-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 20px;
+      font-size: 22px;
+    }
+    .feature-icon.amber { background: rgba(245, 158, 11, 0.1); color: var(--accent); }
+    .feature-icon.blue { background: rgba(59, 130, 246, 0.1); color: var(--accent2); }
+    .feature-icon.green { background: rgba(34, 197, 94, 0.1); color: var(--success); }
+    .feature-icon.red { background: rgba(239, 68, 68, 0.1); color: var(--danger); }
+    .feature-icon.purple { background: rgba(168, 85, 247, 0.1); color: var(--purple); }
+    .feature-icon.cyan { background: rgba(6, 182, 212, 0.1); color: var(--cyan); }
+
+    .feature-card h3 {
+      font-size: 18px;
+      font-weight: 700;
+      margin-bottom: 8px;
+      letter-spacing: -0.3px;
+    }
+    .feature-card p {
+      color: var(--text-dim);
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    /* ============ ARCHITECTURE ============ */
+    .arch-flow {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 12px;
+      align-items: center;
+      margin-bottom: 64px;
+    }
+    .arch-node {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 20px 16px;
+      text-align: center;
+      position: relative;
+    }
+    .arch-node-icon {
+      font-size: 28px;
+      margin-bottom: 8px;
+    }
+    .arch-node-label {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text);
+    }
+    .arch-node-sub {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+    .arch-arrow {
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 20px;
+    }
+
+    .arch-details {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 20px;
+    }
+    .arch-detail-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 28px;
+    }
+    .arch-detail-card h4 {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--accent);
+      margin-bottom: 16px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+    .tech-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .tech-list li {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 14px;
+      color: var(--text-dim);
+    }
+    .tech-list li::before {
+      content: '';
+      width: 4px;
+      height: 4px;
+      border-radius: 50%;
+      background: var(--accent);
+      flex-shrink: 0;
+    }
+    .tech-list code {
+      font-family: var(--mono);
+      font-size: 12px;
+      background: rgba(245, 158, 11, 0.08);
+      color: var(--accent);
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+
+    /* ============ IPHONE MOCKUP ============ */
+    .mockup-section {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 80px;
+      align-items: center;
+    }
+    .mockup-text h2 {
+      font-size: clamp(28px, 4vw, 44px);
+      font-weight: 800;
+      letter-spacing: -1.5px;
+      line-height: 1.1;
+      margin-bottom: 20px;
+    }
+    .mockup-text p {
+      font-size: 16px;
+      color: var(--text-dim);
+      margin-bottom: 32px;
+      line-height: 1.7;
+    }
+    .mockup-features {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .mockup-feature-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+    }
+    .mockup-feature-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+    .mockup-feature-item h4 {
+      font-size: 14px;
+      font-weight: 600;
+      margin-bottom: 2px;
+    }
+    .mockup-feature-item p {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-bottom: 0;
+    }
+
+    /* iPhone Frame */
+    .iphone-frame {
+      width: 320px;
+      height: 660px;
+      background: #1a1a1f;
+      border-radius: 48px;
+      border: 3px solid #2a2a35;
+      padding: 16px;
+      position: relative;
+      margin: 0 auto;
+      box-shadow:
+        0 0 0 1px rgba(255,255,255,0.05),
+        0 24px 80px rgba(0,0,0,0.6),
+        inset 0 1px 1px rgba(255,255,255,0.05);
+    }
+    .iphone-notch {
+      position: absolute;
+      top: 12px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 120px;
+      height: 28px;
+      background: #1a1a1f;
+      border-radius: 0 0 18px 18px;
+      z-index: 10;
+    }
+    .iphone-screen {
+      width: 100%;
+      height: 100%;
+      background: #0d0d12;
+      border-radius: 36px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    /* Notification UI inside iPhone */
+    .phone-status-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 14px 24px 8px;
+      font-size: 12px;
+      font-weight: 600;
+      color: #fff;
+    }
+    .phone-time { font-size: 14px; font-weight: 700; }
+
+    .phone-header {
+      padding: 4px 20px 12px;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+    }
+    .phone-header-top {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 4px;
+    }
+    .phone-header-icon {
+      width: 32px;
+      height: 32px;
+      background: linear-gradient(135deg, #f59e0b, #d97706);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+    }
+    .phone-header h2 {
+      font-size: 18px;
+      font-weight: 700;
+      color: #fff;
+    }
+    .phone-header-sub {
+      font-size: 11px;
+      color: rgba(255,255,255,0.4);
+      margin-left: 42px;
+    }
+
+    .phone-pills {
+      display: flex;
+      gap: 6px;
+      padding: 10px 20px;
+    }
+    .phone-pill {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      padding: 4px 10px;
+      border-radius: 100px;
+      font-size: 10px;
+      font-weight: 600;
+    }
+    .pill-green {
+      background: rgba(34, 197, 94, 0.15);
+      color: #4ade80;
+    }
+    .pill-blue {
+      background: rgba(59, 130, 246, 0.15);
+      color: #60a5fa;
+    }
+    .pill-dot {
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      animation: pulse-dot 2s ease-in-out infinite;
+    }
+    .pill-green .pill-dot { background: #4ade80; }
+    .pill-blue .pill-dot { background: #60a5fa; }
+
+    /* Alert notification card */
+    .phone-alert {
+      margin: 8px 14px;
+      background: rgba(239, 68, 68, 0.08);
+      border: 1px solid rgba(239, 68, 68, 0.2);
+      border-radius: 14px;
+      padding: 14px;
+      animation: alert-pulse 3s ease-in-out infinite;
+    }
+    @keyframes alert-pulse {
+      0%, 100% { border-color: rgba(239, 68, 68, 0.2); }
+      50% { border-color: rgba(239, 68, 68, 0.5); }
+    }
+    .alert-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+    .alert-icon {
+      width: 24px;
+      height: 24px;
+      background: rgba(239, 68, 68, 0.2);
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      color: #ef4444;
+    }
+    .alert-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: #fca5a5;
+    }
+    .alert-time {
+      font-size: 10px;
+      color: rgba(255,255,255,0.3);
+      margin-left: auto;
+    }
+    .alert-body {
+      font-size: 11px;
+      color: rgba(255,255,255,0.6);
+      line-height: 1.5;
+      margin-bottom: 10px;
+    }
+    .alert-meta {
+      display: flex;
+      gap: 12px;
+      font-size: 10px;
+      color: rgba(255,255,255,0.35);
+    }
+    .alert-meta span {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    /* Rack visualization */
+    .phone-rack {
+      margin: 10px 14px;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 12px;
+      padding: 12px;
+    }
+    .rack-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+    .rack-title {
+      font-size: 12px;
+      font-weight: 600;
+      color: rgba(255,255,255,0.7);
+    }
+    .rack-badge {
+      font-size: 9px;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 100px;
+      background: rgba(245, 158, 11, 0.15);
+      color: #fbbf24;
+    }
+    .rack-units {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+    .rack-unit {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 8px;
+      border-radius: 6px;
+      font-size: 9px;
+      font-weight: 500;
+    }
+    .rack-unit-label {
+      color: rgba(255,255,255,0.35);
+      width: 28px;
+      flex-shrink: 0;
+      font-family: var(--mono);
+      font-size: 8px;
+    }
+    .rack-unit-bar {
+      flex: 1;
+      height: 18px;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      padding: 0 8px;
+      font-size: 9px;
+      font-weight: 600;
+      position: relative;
+      overflow: hidden;
+    }
+    .ru-normal {
+      background: rgba(34, 197, 94, 0.1);
+      border: 1px solid rgba(34, 197, 94, 0.15);
+      color: #86efac;
+    }
+    .ru-warn {
+      background: rgba(245, 158, 11, 0.1);
+      border: 1px solid rgba(245, 158, 11, 0.15);
+      color: #fde68a;
+    }
+    .ru-critical {
+      background: rgba(239, 68, 68, 0.12);
+      border: 1px solid rgba(239, 68, 68, 0.2);
+      color: #fca5a5;
+      animation: critical-flash 2s ease-in-out infinite;
+    }
+    @keyframes critical-flash {
+      0%, 100% { background: rgba(239, 68, 68, 0.12); }
+      50% { background: rgba(239, 68, 68, 0.2); }
+    }
+    .ru-empty {
+      background: rgba(255,255,255,0.02);
+      border: 1px solid rgba(255,255,255,0.04);
+    }
+    .rack-unit-temp {
+      margin-left: auto;
+      font-family: var(--mono);
+      font-size: 9px;
+    }
+
+    /* Transcript area */
+    .phone-transcript {
+      margin: 10px 14px;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 12px;
+      padding: 12px;
+    }
+    .transcript-line {
+      display: flex;
+      align-items: flex-start;
+      gap: 6px;
+      margin-bottom: 6px;
+    }
+    .transcript-line:last-child { margin-bottom: 0; }
+    .transcript-icon {
+      font-size: 8px;
+      margin-top: 3px;
+      flex-shrink: 0;
+    }
+    .transcript-icon.user { color: rgba(255,255,255,0.3); }
+    .transcript-icon.ai { color: var(--cyan); }
+    .transcript-text {
+      font-size: 10px;
+      line-height: 1.4;
+    }
+    .transcript-text.user-text { color: rgba(255,255,255,0.45); }
+    .transcript-text.ai-text { color: rgba(255,255,255,0.8); font-weight: 500; }
+
+    .phone-bottom-bar {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      padding: 10px 20px 16px;
+      display: flex;
+      justify-content: center;
+    }
+    .phone-home-indicator {
+      width: 120px;
+      height: 4px;
+      background: rgba(255,255,255,0.2);
+      border-radius: 2px;
+    }
+
+    /* ============ HOW IT WORKS ============ */
+    .how-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 24px;
+      counter-reset: step;
+    }
+    .how-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 32px;
+      position: relative;
+    }
+    .how-card::before {
+      counter-increment: step;
+      content: counter(step, decimal-leading-zero);
+      font-size: 48px;
+      font-weight: 900;
+      color: rgba(245, 158, 11, 0.08);
+      position: absolute;
+      top: 16px;
+      right: 24px;
+      letter-spacing: -2px;
+    }
+    .how-card h3 {
+      font-size: 17px;
+      font-weight: 700;
+      margin-bottom: 8px;
+      letter-spacing: -0.3px;
+    }
+    .how-card p {
+      font-size: 14px;
+      color: var(--text-dim);
+      line-height: 1.6;
+    }
+
+    /* ============ STATE JSON ============ */
+    .code-section {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 48px;
+      align-items: start;
+    }
+    .code-block {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+    .code-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 14px 20px;
+      border-bottom: 1px solid var(--border);
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-dim);
+    }
+    .code-dots {
+      display: flex;
+      gap: 6px;
+    }
+    .code-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+    }
+    .code-dot.r { background: #ef4444; }
+    .code-dot.y { background: #eab308; }
+    .code-dot.g { background: #22c55e; }
+    .code-content {
+      padding: 20px;
+      font-family: var(--mono);
+      font-size: 12.5px;
+      line-height: 1.7;
+      overflow-x: auto;
+      color: var(--text-dim);
+    }
+    .code-content .key { color: var(--accent2); }
+    .code-content .str { color: var(--success); }
+    .code-content .num { color: var(--accent); }
+    .code-content .comment { color: var(--text-muted); font-style: italic; }
+
+    /* ============ DOMAINS ============ */
+    .domains-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+    }
+    .domain-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    .domain-card::after {
+      content: '';
+      position: absolute;
+      top: -100px;
+      right: -100px;
+      width: 250px;
+      height: 250px;
+      border-radius: 50%;
+      pointer-events: none;
+    }
+    .domain-dc::after { background: radial-gradient(circle, rgba(59,130,246,0.06) 0%, transparent 70%); }
+    .domain-cook::after { background: radial-gradient(circle, rgba(245,158,11,0.06) 0%, transparent 70%); }
+
+    .domain-icon {
+      font-size: 36px;
+      margin-bottom: 20px;
+    }
+    .domain-card h3 {
+      font-size: 24px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      margin-bottom: 12px;
+    }
+    .domain-card > p {
+      color: var(--text-dim);
+      font-size: 15px;
+      line-height: 1.6;
+      margin-bottom: 24px;
+    }
+    .domain-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .domain-list li {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      color: var(--text-dim);
+    }
+    .domain-list li::before {
+      content: '\2713';
+      font-size: 11px;
+      font-weight: 700;
+      width: 18px;
+      height: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 5px;
+      flex-shrink: 0;
+    }
+    .domain-dc .domain-list li::before { background: rgba(59,130,246,0.1); color: var(--accent2); }
+    .domain-cook .domain-list li::before { background: rgba(245,158,11,0.1); color: var(--accent); }
+
+    /* ============ FOOTER ============ */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 60px 24px;
+      max-width: 1280px;
+      margin: 0 auto;
+    }
+    .footer-inner {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .footer-brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .footer-brand svg { width: 24px; height: 24px; }
+    .footer-brand span {
+      font-weight: 700;
+      font-size: 16px;
+    }
+    .footer-text {
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+    .footer-links {
+      display: flex;
+      gap: 24px;
+      list-style: none;
+    }
+    .footer-links a {
+      color: var(--text-dim);
+      text-decoration: none;
+      font-size: 13px;
+      transition: color 0.2s;
+    }
+    .footer-links a:hover { color: var(--text); }
+
+    /* ============ RESPONSIVE ============ */
+    @media (max-width: 768px) {
+      .nav-links { display: none; }
+      .hero-stats { gap: 24px; flex-wrap: wrap; justify-content: center; }
+      .arch-flow { grid-template-columns: 1fr; }
+      .arch-arrow { transform: rotate(90deg); }
+      .mockup-section { grid-template-columns: 1fr; gap: 48px; }
+      .mockup-text { order: 2; }
+      .code-section { grid-template-columns: 1fr; }
+      .domains-grid { grid-template-columns: 1fr; }
+      .footer-inner { flex-direction: column; gap: 24px; text-align: center; }
+      section { padding: 80px 20px; }
+    }
+
+    /* ============ SCROLL ANIMATIONS ============ */
+    .fade-in {
+      opacity: 0;
+      transform: translateY(24px);
+      transition: opacity 0.6s ease, transform 0.6s ease;
+    }
+    .fade-in.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NAV -->
+  <nav>
+    <div class="nav-inner">
+      <a href="#" class="nav-logo">
+        <svg viewBox="0 0 32 32" fill="none">
+          <circle cx="16" cy="16" r="14" stroke="#f59e0b" stroke-width="2.5"/>
+          <circle cx="16" cy="16" r="5" fill="#f59e0b"/>
+          <line x1="16" y1="2" x2="16" y2="8" stroke="#f59e0b" stroke-width="2" stroke-linecap="round"/>
+          <line x1="16" y1="24" x2="16" y2="30" stroke="#f59e0b" stroke-width="2" stroke-linecap="round"/>
+          <line x1="2" y1="16" x2="8" y2="16" stroke="#f59e0b" stroke-width="2" stroke-linecap="round"/>
+          <line x1="24" y1="16" x2="30" y2="16" stroke="#f59e0b" stroke-width="2" stroke-linecap="round"/>
+          <line x1="6.1" y1="6.1" x2="10.3" y2="10.3" stroke="#f59e0b" stroke-width="2" stroke-linecap="round"/>
+          <line x1="21.7" y1="21.7" x2="25.9" y2="25.9" stroke="#f59e0b" stroke-width="2" stroke-linecap="round"/>
+          <line x1="6.1" y1="25.9" x2="10.3" y2="21.7" stroke="#f59e0b" stroke-width="2" stroke-linecap="round"/>
+          <line x1="21.7" y1="10.3" x2="25.9" y2="6.1" stroke="#f59e0b" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+        <span>Helios</span>
+      </a>
+      <ul class="nav-links">
+        <li><a href="#features">Features</a></li>
+        <li><a href="#architecture">Architecture</a></li>
+        <li><a href="#live-view">Live View</a></li>
+        <li><a href="#domains">Domains</a></li>
+        <li><a href="#how-it-works">How It Works</a></li>
+        <li><a href="https://github.com/shuaibtabit/helios" class="nav-cta">GitHub</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="badge">
+      <span class="badge-dot"></span>
+      Powered by Gemini 2.5 Flash
+    </div>
+    <h1>
+      <span class="gradient-text">Helios</span><br>
+      Sees Everything.
+    </h1>
+    <p class="hero-sub">
+      Multimodal AI assistant for datacenter engineers. Real-time visual reasoning through Meta Ray-Ban smart glasses, grounded in your infrastructure APIs. Zero hallucination.
+    </p>
+    <div class="hero-actions">
+      <a href="#live-view" class="btn-primary">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 1.5a6.5 6.5 0 100 13 6.5 6.5 0 000-13zM0 8a8 8 0 1116 0A8 8 0 010 8zm6.5-3a.75.75 0 00-.75.75v4.5c0 .58.63.93 1.13.62l3.5-2.25a.75.75 0 000-1.24l-3.5-2.25A.75.75 0 006.5 5z"/></svg>
+        See It In Action
+      </a>
+      <a href="https://github.com/shuaibtabit/helios" target="_blank" class="btn-secondary">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+        View Source
+      </a>
+    </div>
+    <div class="hero-stats">
+      <div class="stat">
+        <div class="stat-value">1fps</div>
+        <div class="stat-label">Video Analysis</div>
+      </div>
+      <div class="stat">
+        <div class="stat-value">116+</div>
+        <div class="stat-label">Devices Tracked</div>
+      </div>
+      <div class="stat">
+        <div class="stat-value"><100ms</div>
+        <div class="stat-label">Voice Latency</div>
+      </div>
+      <div class="stat">
+        <div class="stat-value">0</div>
+        <div class="stat-label">Hallucinations</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FEATURES -->
+  <section id="features" class="fade-in">
+    <div class="section-label">Core Capabilities</div>
+    <h2 class="section-title">What engineers<br>actually need.</h2>
+    <p class="section-desc">
+      Helios combines real-time computer vision, voice interaction, and datacenter API integration into a hands-free assistant that rides on your face.
+    </p>
+    <div class="features-grid">
+      <div class="feature-card">
+        <div class="feature-icon amber">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+        </div>
+        <h3>Visual Reasoning</h3>
+        <p>Sees through Meta Ray-Ban glasses at 1fps. Identifies servers, reads LEDs, recognizes cable types, and inspects rack health in real-time via Gemini 2.5 multimodal.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon blue">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z"/><path d="M19 10v2a7 7 0 01-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+        </div>
+        <h3>Voice-First Interface</h3>
+        <p>Techs have their hands full. Helios speaks and listens through the glasses -- no phone, no screen, no extra hardware. Natural conversation with automatic speech detection.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon green">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+        </div>
+        <h3>NetBox Integration</h3>
+        <p>Pulls live device inventory, rack positions, cable maps, and IP assignments from your NetBox instance. Every answer is grounded in your actual infrastructure data.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon red">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 9v4"/><path d="M10.363 3.591l-8.106 13.534a1.914 1.914 0 001.636 2.871h16.214a1.914 1.914 0 001.636-2.87L13.637 3.59a1.914 1.914 0 00-3.274 0z"/><circle cx="12" cy="16" r="1"/></svg>
+        </div>
+        <h3>Redfish Health Monitoring</h3>
+        <p>Real-time CPU temperatures, fan speeds, power consumption, and system health from Redfish BMC APIs. Correlates visual cues with telemetry data for accurate diagnosis.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon purple">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l3.77-3.77a6 6 0 01-7.94 7.94l-6.91 6.91a2.12 2.12 0 01-3-3l6.91-6.91a6 6 0 017.94-7.94l-3.76 3.76z"/></svg>
+        </div>
+        <h3>State Machine Tracking</h3>
+        <p>Continuous JSON state engine tracks task progression, urgency levels, and time-to-action predictions using linear regression. No context is ever lost between frames.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon cyan">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 11-7.778 7.778 5.5 5.5 0 017.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg>
+        </div>
+        <h3>WebRTC Live POV</h3>
+        <p>One-way video stream from glasses to a browser dashboard via WebRTC. Remote teams see exactly what the technician sees with room-code based signaling.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ARCHITECTURE -->
+  <section id="architecture" class="fade-in">
+    <div class="section-label">System Design</div>
+    <h2 class="section-title">End-to-end<br>architecture.</h2>
+    <p class="section-desc">
+      From photons hitting the glasses camera to voice response in the technician's ear -- every hop in under 100ms.
+    </p>
+
+    <div class="arch-flow">
+      <div class="arch-node">
+        <div class="arch-node-icon">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></svg>
+        </div>
+        <div class="arch-node-label">Smart Glasses</div>
+        <div class="arch-node-sub">Meta Ray-Ban Camera + Mic</div>
+      </div>
+      <div class="arch-arrow">&rarr;</div>
+      <div class="arch-node">
+        <div class="arch-node-icon">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--accent2)" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
+        </div>
+        <div class="arch-node-label">Helios iOS</div>
+        <div class="arch-node-sub">Swift + Meta DAT SDK</div>
+      </div>
+      <div class="arch-arrow">&rarr;</div>
+      <div class="arch-node">
+        <div class="arch-node-icon">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--purple)" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+        </div>
+        <div class="arch-node-label">Gemini 2.5</div>
+        <div class="arch-node-sub">Multimodal WebSocket</div>
+      </div>
+      <div class="arch-arrow">&rarr;</div>
+      <div class="arch-node">
+        <div class="arch-node-icon">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--success)" stroke-width="2"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>
+        </div>
+        <div class="arch-node-label">DC APIs</div>
+        <div class="arch-node-sub">NetBox + Redfish</div>
+      </div>
+      <div class="arch-arrow">&rarr;</div>
+      <div class="arch-node">
+        <div class="arch-node-icon">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--cyan)" stroke-width="2"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
+        </div>
+        <div class="arch-node-label">Voice + Alerts</div>
+        <div class="arch-node-sub">Audio Response</div>
+      </div>
+    </div>
+
+    <div class="arch-details">
+      <div class="arch-detail-card">
+        <h4>iOS App</h4>
+        <ul class="tech-list">
+          <li>SwiftUI with <code>AVAudioEngine</code> pipeline</li>
+          <li>Meta Wearables DAT SDK for glasses streaming</li>
+          <li>WebSocket client for Gemini real-time API</li>
+          <li>16kHz mono input, 24kHz playback</li>
+          <li>JPEG frame encoding at 50% quality, 1fps</li>
+        </ul>
+      </div>
+      <div class="arch-detail-card">
+        <h4>AI Layer</h4>
+        <ul class="tech-list">
+          <li>Gemini 2.5 Flash native audio preview</li>
+          <li>Multimodal: video + audio + text context</li>
+          <li>Structured JSON state output per response</li>
+          <li>Tool calling for agent gateway delegation</li>
+          <li>Automatic speech detection with interrupts</li>
+        </ul>
+      </div>
+      <div class="arch-detail-card">
+        <h4>Infrastructure</h4>
+        <ul class="tech-list">
+          <li>NetBox API for device inventory & topology</li>
+          <li>Redfish BMC for real-time server health</li>
+          <li>30-second refresh cycle for health data</li>
+          <li>Mock data generators for demo scenarios</li>
+          <li>3 sites, 116 devices, full rack mapping</li>
+        </ul>
+      </div>
+      <div class="arch-detail-card">
+        <h4>Streaming</h4>
+        <ul class="tech-list">
+          <li>WebRTC one-way video (glasses &rarr; browser)</li>
+          <li>Node.js signaling server with room codes</li>
+          <li>TURN server for NAT traversal</li>
+          <li>60s grace period for backgrounding</li>
+          <li>Custom video capturer for WebRTC pipeline</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- IPHONE MOCKUP -->
+  <section id="live-view" class="fade-in">
+    <div class="mockup-section">
+      <div class="mockup-text">
+        <div class="section-label">Live Intelligence</div>
+        <h2>Critical alerts, delivered<br><span style="color: var(--danger)">before it's too late.</span></h2>
+        <p>
+          Helios continuously correlates what the camera sees with live telemetry from Redfish and NetBox. When a server overheats, a fan fails, or a cable is misrouted -- the technician knows immediately through voice and visual alerts.
+        </p>
+        <div class="mockup-features">
+          <div class="mockup-feature-item">
+            <div class="mockup-feature-icon" style="background: rgba(239,68,68,0.1); color: var(--danger);">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 9v4"/><path d="M10.363 3.591l-8.106 13.534a1.914 1.914 0 001.636 2.871h16.214a1.914 1.914 0 001.636-2.87L13.637 3.59a1.914 1.914 0 00-3.274 0z"/></svg>
+            </div>
+            <div>
+              <h4>Temperature Spikes</h4>
+              <p>Urgency escalates linearly; immediate voice alert at 0.9+</p>
+            </div>
+          </div>
+          <div class="mockup-feature-item">
+            <div class="mockup-feature-icon" style="background: rgba(59,130,246,0.1); color: var(--accent2);">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8"/><path d="M12 17v4"/></svg>
+            </div>
+            <div>
+              <h4>Rack-Level Mapping</h4>
+              <p>Exact U-position, device name, and health status per slot</p>
+            </div>
+          </div>
+          <div class="mockup-feature-item">
+            <div class="mockup-feature-icon" style="background: rgba(168,85,247,0.1); color: var(--purple);">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+            </div>
+            <div>
+              <h4>Visual + API Convergence</h4>
+              <p>Camera observations cross-referenced with Redfish telemetry</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- iPhone Mockup -->
+      <div>
+        <div class="iphone-frame">
+          <div class="iphone-notch"></div>
+          <div class="iphone-screen">
+            <div class="phone-status-bar">
+              <span class="phone-time">9:41</span>
+              <span style="font-size: 10px;">
+                <svg width="14" height="10" viewBox="0 0 14 10" fill="white"><rect x="0" y="4" width="2" height="6" rx="0.5"/><rect x="3" y="2.5" width="2" height="7.5" rx="0.5"/><rect x="6" y="1" width="2" height="9" rx="0.5"/><rect x="9" y="0" width="2" height="10" rx="0.5"/></svg>
+              </span>
+            </div>
+
+            <div class="phone-header">
+              <div class="phone-header-top">
+                <div class="phone-header-icon">
+                  <svg width="16" height="16" viewBox="0 0 32 32" fill="none"><circle cx="16" cy="16" r="6" fill="white"/><line x1="16" y1="4" x2="16" y2="10" stroke="white" stroke-width="2.5" stroke-linecap="round"/><line x1="16" y1="22" x2="16" y2="28" stroke="white" stroke-width="2.5" stroke-linecap="round"/><line x1="4" y1="16" x2="10" y2="16" stroke="white" stroke-width="2.5" stroke-linecap="round"/><line x1="22" y1="16" x2="28" y2="16" stroke="white" stroke-width="2.5" stroke-linecap="round"/></svg>
+                </div>
+                <h2 style="font-size: 16px; font-weight: 700; color: #fff;">Helios</h2>
+              </div>
+              <div class="phone-header-sub">Ashburn DC-01 &middot; Data Center Mode</div>
+            </div>
+
+            <div class="phone-pills">
+              <div class="phone-pill pill-green">
+                <span class="pill-dot"></span>
+                Gemini
+              </div>
+              <div class="phone-pill pill-blue">
+                <span class="pill-dot"></span>
+                Agent
+              </div>
+            </div>
+
+            <!-- Critical Alert -->
+            <div class="phone-alert">
+              <div class="alert-header">
+                <div class="alert-icon">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L1 21h22L12 2zm0 4l7.53 13H4.47L12 6zm-1 5v4h2v-4h-2zm0 6v2h2v-2h-2z"/></svg>
+                </div>
+                <span class="alert-title">CRITICAL: Server Overheating</span>
+                <span class="alert-time">2s ago</span>
+              </div>
+              <div class="alert-body">
+                <strong>dell-r750-ash-03</strong> in Rack A-07, U12 reporting CPU temp 94&deg;C. Fan 3 failure detected via Redfish. Ambient temp elevated. Immediate inspection required.
+              </div>
+              <div class="alert-meta">
+                <span>
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                  Rack A-07, U12
+                </span>
+                <span>
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l3.77-3.77a6 6 0 01-7.94 7.94l-6.91 6.91a2.12 2.12 0 01-3-3l6.91-6.91a6 6 0 017.94-7.94l-3.76 3.76z"/></svg>
+                  Urgency: 0.92
+                </span>
+                <span>
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                  Act now
+                </span>
+              </div>
+            </div>
+
+            <!-- Rack Viz -->
+            <div class="phone-rack">
+              <div class="rack-header">
+                <span class="rack-title">Rack A-07 &middot; Ashburn DC-01</span>
+                <span class="rack-badge">4/6 Healthy</span>
+              </div>
+              <div class="rack-units">
+                <div class="rack-unit">
+                  <span class="rack-unit-label">U14</span>
+                  <div class="rack-unit-bar ru-normal">cisco-n9k-ash-01 <span class="rack-unit-temp">42&deg;C</span></div>
+                </div>
+                <div class="rack-unit">
+                  <span class="rack-unit-label">U13</span>
+                  <div class="rack-unit-bar ru-normal">hpe-dl380-ash-01 <span class="rack-unit-temp">58&deg;C</span></div>
+                </div>
+                <div class="rack-unit">
+                  <span class="rack-unit-label">U12</span>
+                  <div class="rack-unit-bar ru-critical">dell-r750-ash-03 <span class="rack-unit-temp">94&deg;C</span></div>
+                </div>
+                <div class="rack-unit">
+                  <span class="rack-unit-label">U11</span>
+                  <div class="rack-unit-bar ru-warn">dell-r750-ash-02 <span class="rack-unit-temp">71&deg;C</span></div>
+                </div>
+                <div class="rack-unit">
+                  <span class="rack-unit-label">U10</span>
+                  <div class="rack-unit-bar ru-normal">dell-r750-ash-01 <span class="rack-unit-temp">55&deg;C</span></div>
+                </div>
+                <div class="rack-unit">
+                  <span class="rack-unit-label">U09</span>
+                  <div class="rack-unit-bar ru-empty"></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Transcript -->
+            <div class="phone-transcript">
+              <div class="transcript-line">
+                <span class="transcript-icon user">&#9679;</span>
+                <span class="transcript-text user-text">What's wrong with this server?</span>
+              </div>
+              <div class="transcript-line">
+                <span class="transcript-icon ai">&#10022;</span>
+                <span class="transcript-text ai-text">That's dell-r750-ash-03 in U12. CPU temp is 94 degrees -- fan 3 has failed. I recommend swapping the fan module immediately.</span>
+              </div>
+            </div>
+
+            <div class="phone-bottom-bar">
+              <div class="phone-home-indicator"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- STATE JSON -->
+  <section id="state-engine" class="fade-in">
+    <div class="section-label">Intelligence Layer</div>
+    <h2 class="section-title">Every response carries<br>structured state.</h2>
+    <p class="section-desc">
+      Gemini outputs a JSON state object with every response. The app's TaskStateManager tracks urgency, predicts time-to-action, and detects acceleration -- all grounded in what the camera actually sees.
+    </p>
+    <div class="code-section">
+      <div class="code-block">
+        <div class="code-header">
+          <div class="code-dots"><span class="code-dot r"></span><span class="code-dot y"></span><span class="code-dot g"></span></div>
+          datacenter_state.json
+        </div>
+        <div class="code-content">
+<pre>{
+  <span class="key">"task"</span>: <span class="str">"inspect rack A-07 cooling"</span>,
+  <span class="key">"work_type"</span>: <span class="str">"datacenter"</span>,
+  <span class="key">"stage"</span>: <span class="str">"diagnosing_thermal_issue"</span>,
+  <span class="key">"urgency"</span>: <span class="num">0.92</span>,
+  <span class="key">"cues"</span>: [
+    <span class="str">"amber LED on U12 server"</span>,
+    <span class="str">"fan 3 audibly slower"</span>,
+    <span class="str">"heat shimmer above chassis"</span>
+  ],
+  <span class="key">"action"</span>: <span class="str">"replace fan module immediately"</span>,
+  <span class="key">"seconds_est"</span>: <span class="num">30</span>,
+  <span class="key">"confidence"</span>: <span class="num">0.97</span>
+}</pre>
+        </div>
+      </div>
+      <div>
+        <div style="margin-bottom: 32px;">
+          <h3 style="font-size: 20px; font-weight: 700; margin-bottom: 12px; letter-spacing: -0.5px;">Urgency-Driven Response</h3>
+          <p style="color: var(--text-dim); font-size: 14px; line-height: 1.7;">
+            The urgency field (0.0 - 1.0) drives the AI's communication style and the app's alert behavior. Linear regression predicts how fast urgency is climbing.
+          </p>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 12px;">
+          <div style="background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 16px;">
+            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+              <div style="width: 8px; height: 8px; border-radius: 50%; background: var(--success);"></div>
+              <span style="font-size: 13px; font-weight: 600;">0.0 - 0.2</span>
+              <span style="font-size: 12px; color: var(--text-muted); margin-left: auto;">Calm</span>
+            </div>
+            <p style="font-size: 12px; color: var(--text-dim);">Brief positive confirmation. "All looks good here."</p>
+          </div>
+          <div style="background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 16px;">
+            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+              <div style="width: 8px; height: 8px; border-radius: 50%; background: var(--accent);"></div>
+              <span style="font-size: 13px; font-weight: 600;">0.5 - 0.7</span>
+              <span style="font-size: 12px; color: var(--text-muted); margin-left: auto;">Elevated</span>
+            </div>
+            <p style="font-size: 12px; color: var(--text-dim);">Direct callout with specifics. "U12 is running warm, 71 degrees."</p>
+          </div>
+          <div style="background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 16px;">
+            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+              <div style="width: 8px; height: 8px; border-radius: 50%; background: var(--danger);"></div>
+              <span style="font-size: 13px; font-weight: 600;">0.9+</span>
+              <span style="font-size: 12px; color: var(--text-muted); margin-left: auto;">Critical</span>
+            </div>
+            <p style="font-size: 12px; color: var(--text-dim);">Immediate alert. "Stop -- that server needs to be shut down now."</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- DOMAINS -->
+  <section id="domains" class="fade-in">
+    <div class="section-label">Operational Domains</div>
+    <h2 class="section-title">Two worlds,<br>one assistant.</h2>
+    <p class="section-desc">
+      Helios ships with two domain-specific AI configurations. Each domain has its own system prompt, state schema, and urgency model.
+    </p>
+    <div class="domains-grid">
+      <div class="domain-card domain-dc">
+        <div class="domain-icon">
+          <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="var(--accent2)" stroke-width="1.5"><rect x="2" y="2" width="20" height="8" rx="2"/><rect x="2" y="14" width="20" height="8" rx="2"/><circle cx="6" cy="6" r="1" fill="var(--accent2)"/><circle cx="6" cy="18" r="1" fill="var(--accent2)"/><line x1="10" y1="6" x2="18" y2="6" stroke-linecap="round"/><line x1="10" y1="18" x2="18" y2="18" stroke-linecap="round"/></svg>
+        </div>
+        <h3>Data Center</h3>
+        <p>Infrastructure monitoring and technician guidance powered by NetBox inventory and Redfish health data.</p>
+        <ul class="domain-list">
+          <li>Device identification via camera + API lookup</li>
+          <li>LED and cable recognition in real-time</li>
+          <li>Rack inspection with U-position mapping</li>
+          <li>Temperature and power anomaly detection</li>
+          <li>Troubleshooting guided by visual + telemetry convergence</li>
+          <li>3 sites, 116 devices, full cable topology</li>
+        </ul>
+      </div>
+      <div class="domain-card domain-cook">
+        <div class="domain-icon">
+          <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.5"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/><path d="M15 8.5c0-.83-.67-1.5-1.5-1.5S12 7.67 12 8.5V12l3.61 2.16.78-1.28L13 11.2V8.5z"/></svg>
+        </div>
+        <h3>Cooking</h3>
+        <p>Real-time sous-chef guidance with visual state tracking, countdown timers, and anti-burn safeguards.</p>
+        <ul class="domain-list">
+          <li>Stovetop and ingredient identification</li>
+          <li>Step-by-step guided cooking phases</li>
+          <li>Visual doneness tracking (opacity, browning, smoke)</li>
+          <li>Countdown timer with urgency prediction</li>
+          <li>Hard caps: 20s over-easy flip, 2min well-done flip</li>
+          <li>Immediate action on smoke detection</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- HOW IT WORKS -->
+  <section id="how-it-works" class="fade-in">
+    <div class="section-label">The Flow</div>
+    <h2 class="section-title">How Helios works.</h2>
+    <p class="section-desc">
+      From putting on the glasses to getting an AI-powered answer -- every step in the pipeline.
+    </p>
+    <div class="how-grid">
+      <div class="how-card">
+        <h3>Glasses Connect</h3>
+        <p>Meta Ray-Ban smart glasses pair via the Meta DAT SDK. Video streams at up to 720x1280 in HEVC/H.264.</p>
+      </div>
+      <div class="how-card">
+        <h3>Frames Captured</h3>
+        <p>The iOS app decodes video frames and sends 1 JPEG per second (50% quality) to the Gemini WebSocket alongside 16kHz audio.</p>
+      </div>
+      <div class="how-card">
+        <h3>Context Injected</h3>
+        <p>Each frame is annotated with previous state JSON, urgency predictions, datacenter inventory, and health telemetry from NetBox and Redfish.</p>
+      </div>
+      <div class="how-card">
+        <h3>Gemini Reasons</h3>
+        <p>Gemini 2.5 Flash processes the multimodal input and returns audio speech, text transcription, structured JSON state, and optional tool calls.</p>
+      </div>
+      <div class="how-card">
+        <h3>Voice Response</h3>
+        <p>24kHz PCM audio plays through the glasses speakers. The technician hears the AI's assessment hands-free while continuing work.</p>
+      </div>
+      <div class="how-card">
+        <h3>State Tracked</h3>
+        <p>The TaskStateManager updates urgency, predicts time-to-action via linear regression, and feeds this back into the next frame's context.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="footer-inner">
+      <div class="footer-brand">
+        <svg width="24" height="24" viewBox="0 0 32 32" fill="none">
+          <circle cx="16" cy="16" r="14" stroke="#f59e0b" stroke-width="2.5"/>
+          <circle cx="16" cy="16" r="5" fill="#f59e0b"/>
+          <line x1="16" y1="2" x2="16" y2="8" stroke="#f59e0b" stroke-width="2" stroke-linecap="round"/>
+          <line x1="16" y1="24" x2="16" y2="30" stroke="#f59e0b" stroke-width="2" stroke-linecap="round"/>
+          <line x1="2" y1="16" x2="8" y2="16" stroke="#f59e0b" stroke-width="2" stroke-linecap="round"/>
+          <line x1="24" y1="16" x2="30" y2="16" stroke="#f59e0b" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+        <span>Helios</span>
+      </div>
+      <span class="footer-text">Built with Gemini 2.5 + Meta Ray-Ban Smart Glasses</span>
+      <ul class="footer-links">
+        <li><a href="https://github.com/shuaibtabit/helios">GitHub</a></li>
+        <li><a href="#features">Features</a></li>
+        <li><a href="#architecture">Architecture</a></li>
+      </ul>
+    </div>
+  </footer>
+
+  <!-- Scroll Animation -->
+  <script>
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+        }
+      });
+    }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+
+    document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
+  </script>
+</body>
+</html>

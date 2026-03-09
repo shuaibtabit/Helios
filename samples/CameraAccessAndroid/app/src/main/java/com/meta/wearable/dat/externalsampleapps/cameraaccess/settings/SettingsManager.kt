@@ -21,24 +21,24 @@ object SettingsManager {
         get() = prefs.getString("geminiSystemPrompt", null) ?: DEFAULT_SYSTEM_PROMPT
         set(value) = prefs.edit().putString("geminiSystemPrompt", value).apply()
 
-    var openClawHost: String
-        get() = prefs.getString("openClawHost", null) ?: Secrets.openClawHost
-        set(value) = prefs.edit().putString("openClawHost", value).apply()
+    var agentHost: String
+        get() = prefs.getString("agentHost", null) ?: Secrets.agentHost
+        set(value) = prefs.edit().putString("agentHost", value).apply()
 
-    var openClawPort: Int
+    var agentPort: Int
         get() {
-            val stored = prefs.getInt("openClawPort", 0)
-            return if (stored != 0) stored else Secrets.openClawPort
+            val stored = prefs.getInt("agentPort", 0)
+            return if (stored != 0) stored else Secrets.agentPort
         }
-        set(value) = prefs.edit().putInt("openClawPort", value).apply()
+        set(value) = prefs.edit().putInt("agentPort", value).apply()
 
-    var openClawHookToken: String
-        get() = prefs.getString("openClawHookToken", null) ?: Secrets.openClawHookToken
-        set(value) = prefs.edit().putString("openClawHookToken", value).apply()
+    var agentHookToken: String
+        get() = prefs.getString("agentHookToken", null) ?: Secrets.agentHookToken
+        set(value) = prefs.edit().putString("agentHookToken", value).apply()
 
-    var openClawGatewayToken: String
-        get() = prefs.getString("openClawGatewayToken", null) ?: Secrets.openClawGatewayToken
-        set(value) = prefs.edit().putString("openClawGatewayToken", value).apply()
+    var agentGatewayToken: String
+        get() = prefs.getString("agentGatewayToken", null) ?: Secrets.agentGatewayToken
+        set(value) = prefs.edit().putString("agentGatewayToken", value).apply()
 
     var webrtcSignalingURL: String
         get() = prefs.getString("webrtcSignalingURL", null) ?: Secrets.webrtcSignalingURL

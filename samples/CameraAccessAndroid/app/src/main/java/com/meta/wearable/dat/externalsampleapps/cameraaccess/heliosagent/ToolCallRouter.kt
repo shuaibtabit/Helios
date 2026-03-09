@@ -1,4 +1,4 @@
-package com.meta.wearable.dat.externalsampleapps.cameraaccess.openclaw
+package com.meta.wearable.dat.externalsampleapps.cameraaccess.heliosagent
 
 import android.util.Log
 import kotlinx.coroutines.CoroutineScope
@@ -8,7 +8,7 @@ import org.json.JSONArray
 import org.json.JSONObject
 
 class ToolCallRouter(
-    private val bridge: OpenClawBridge,
+    private val bridge: HeliosAgentBridge,
     private val scope: CoroutineScope
 ) {
     companion object {

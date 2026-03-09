@@ -33,8 +33,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.meta.wearable.dat.externalsampleapps.cameraaccess.gemini.GeminiConnectionState
 import com.meta.wearable.dat.externalsampleapps.cameraaccess.gemini.GeminiUiState
-import com.meta.wearable.dat.externalsampleapps.cameraaccess.openclaw.OpenClawConnectionState
-import com.meta.wearable.dat.externalsampleapps.cameraaccess.openclaw.ToolCallStatus
+import com.meta.wearable.dat.externalsampleapps.cameraaccess.heliosagent.HeliosAgentConnectionState
+import com.meta.wearable.dat.externalsampleapps.cameraaccess.heliosagent.ToolCallStatus
 
 @Composable
 fun GeminiOverlay(
@@ -47,7 +47,7 @@ fun GeminiOverlay(
         // Status bar
         GeminiStatusBar(
             connectionState = uiState.connectionState,
-            openClawState = uiState.openClawConnectionState,
+            agentState = uiState.agentConnectionState,
         )
 
         Spacer(modifier = Modifier.height(8.dp))
@@ -78,7 +78,7 @@ fun GeminiOverlay(
 @Composable
 fun GeminiStatusBar(
     connectionState: GeminiConnectionState,
-    openClawState: OpenClawConnectionState,
+    agentState: HeliosAgentConnectionState,
     modifier: Modifier = Modifier,
 ) {
     Row(
@@ -96,14 +96,14 @@ fun GeminiStatusBar(
             },
         )
 
-        if (openClawState !is OpenClawConnectionState.NotConfigured) {
+        if (agentState !is HeliosAgentConnectionState.NotConfigured) {
             StatusPill(
-                label = "OpenClaw",
-                color = when (openClawState) {
-                    is OpenClawConnectionState.Connected -> Color(0xFF4CAF50)
-                    is OpenClawConnectionState.Checking -> Color(0xFFFF9800)
-                    is OpenClawConnectionState.Unreachable -> Color(0xFFF44336)
-                    is OpenClawConnectionState.NotConfigured -> Color(0xFF9E9E9E)
+                label = "Agent",
+                color = when (agentState) {
+                    is HeliosAgentConnectionState.Connected -> Color(0xFF4CAF50)
+                    is HeliosAgentConnectionState.Checking -> Color(0xFFFF9800)
+                    is HeliosAgentConnectionState.Unreachable -> Color(0xFFF44336)
+                    is HeliosAgentConnectionState.NotConfigured -> Color(0xFF9E9E9E)
                 },
             )
         }

@@ -4,10 +4,10 @@ import android.graphics.Bitmap
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.meta.wearable.dat.externalsampleapps.cameraaccess.openclaw.OpenClawBridge
-import com.meta.wearable.dat.externalsampleapps.cameraaccess.openclaw.OpenClawConnectionState
-import com.meta.wearable.dat.externalsampleapps.cameraaccess.openclaw.ToolCallRouter
-import com.meta.wearable.dat.externalsampleapps.cameraaccess.openclaw.ToolCallStatus
+import com.meta.wearable.dat.externalsampleapps.cameraaccess.heliosagent.HeliosAgentBridge
+import com.meta.wearable.dat.externalsampleapps.cameraaccess.heliosagent.HeliosAgentConnectionState
+import com.meta.wearable.dat.externalsampleapps.cameraaccess.heliosagent.ToolCallRouter
+import com.meta.wearable.dat.externalsampleapps.cameraaccess.heliosagent.ToolCallStatus
 import com.meta.wearable.dat.externalsampleapps.cameraaccess.stream.StreamingMode
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -25,7 +25,7 @@ data class GeminiUiState(
     val userTranscript: String = "",
     val aiTranscript: String = "",
     val toolCallStatus: ToolCallStatus = ToolCallStatus.Idle,
-    val openClawConnectionState: OpenClawConnectionState = OpenClawConnectionState.NotConfigured,
+    val agentConnectionState: HeliosAgentConnectionState = HeliosAgentConnectionState.NotConfigured,
 )
 
 class GeminiSessionViewModel : ViewModel() {
@@ -37,7 +37,7 @@ class GeminiSessionViewModel : ViewModel() {
     val uiState: StateFlow<GeminiUiState> = _uiState.asStateFlow()
 
     private val geminiService = GeminiLiveService()
-    private val openClawBridge = OpenClawBridge()
+    private val agentBridge = HeliosAgentBridge()
     private var toolCallRouter: ToolCallRouter? = null
     private val audioManager = AudioManager()
     private var lastVideoFrameTime: Long = 0
@@ -98,13 +98,13 @@ class GeminiSessionViewModel : ViewModel() {
             }
         }
 
-        // Check OpenClaw and start session
+        // Check agent gateway and start session
         viewModelScope.launch {
-            openClawBridge.checkConnection()
-            openClawBridge.resetSession()
+            agentBridge.checkConnection()
+            agentBridge.resetSession()
 
             // Wire tool call handling
-            toolCallRouter = ToolCallRouter(openClawBridge, viewModelScope)
+            toolCallRouter = ToolCallRouter(agentBridge, viewModelScope)
 
             geminiService.onToolCall = { toolCall ->
                 for (call in toolCall.functionCalls) {
@@ -125,8 +125,8 @@ class GeminiSessionViewModel : ViewModel() {
                     _uiState.value = _uiState.value.copy(
                         connectionState = geminiService.connectionState.value,
                         isModelSpeaking = geminiService.isModelSpeaking.value,
-                        toolCallStatus = openClawBridge.lastToolCallStatus.value,
-                        openClawConnectionState = openClawBridge.connectionState.value,
+                        toolCallStatus = agentBridge.lastToolCallStatus.value,
+                        agentConnectionState = agentBridge.connectionState.value,
                     )
                 }
             }

@@ -5,10 +5,10 @@ struct SettingsView: View {
   private let settings = SettingsManager.shared
 
   @State private var geminiAPIKey: String = ""
-  @State private var openClawHost: String = ""
-  @State private var openClawPort: String = ""
-  @State private var openClawHookToken: String = ""
-  @State private var openClawGatewayToken: String = ""
+  @State private var agentHost: String = ""
+  @State private var agentPort: String = ""
+  @State private var agentHookToken: String = ""
+  @State private var agentGatewayToken: String = ""
   @State private var geminiSystemPrompt: String = ""
   @State private var heliosDomain: HeliosDomain = .cooking
   @State private var webrtcSignalingURL: String = ""
@@ -45,12 +45,12 @@ struct SettingsView: View {
           .pickerStyle(.segmented)
         }
 
-        Section(header: Text("OpenClaw"), footer: Text("Connect to an OpenClaw gateway running on your Mac for agentic tool-calling.")) {
+        Section(header: Text("Agent Gateway"), footer: Text("Connect to an Agent Gateway gateway running on your Mac for agentic tool-calling.")) {
           VStack(alignment: .leading, spacing: 4) {
             Text("Host")
               .font(.caption)
               .foregroundColor(.secondary)
-            TextField("http://your-mac.local", text: $openClawHost)
+            TextField("http://your-mac.local", text: $agentHost)
               .autocapitalization(.none)
               .disableAutocorrection(true)
               .keyboardType(.URL)
@@ -61,7 +61,7 @@ struct SettingsView: View {
             Text("Port")
               .font(.caption)
               .foregroundColor(.secondary)
-            TextField("18789", text: $openClawPort)
+            TextField("18789", text: $agentPort)
               .keyboardType(.numberPad)
               .font(.system(.body, design: .monospaced))
           }
@@ -70,7 +70,7 @@ struct SettingsView: View {
             Text("Hook Token")
               .font(.caption)
               .foregroundColor(.secondary)
-            TextField("Hook token", text: $openClawHookToken)
+            TextField("Hook token", text: $agentHookToken)
               .autocapitalization(.none)
               .disableAutocorrection(true)
               .font(.system(.body, design: .monospaced))
@@ -80,7 +80,7 @@ struct SettingsView: View {
             Text("Gateway Token")
               .font(.caption)
               .foregroundColor(.secondary)
-            TextField("Gateway auth token", text: $openClawGatewayToken)
+            TextField("Gateway auth token", text: $agentGatewayToken)
               .autocapitalization(.none)
               .disableAutocorrection(true)
               .font(.system(.body, design: .monospaced))
@@ -183,10 +183,10 @@ struct SettingsView: View {
     geminiAPIKey = settings.geminiAPIKey
     geminiSystemPrompt = settings.geminiSystemPrompt
     heliosDomain = settings.heliosDomain
-    openClawHost = settings.openClawHost
-    openClawPort = String(settings.openClawPort)
-    openClawHookToken = settings.openClawHookToken
-    openClawGatewayToken = settings.openClawGatewayToken
+    agentHost = settings.agentHost
+    agentPort = String(settings.agentPort)
+    agentHookToken = settings.agentHookToken
+    agentGatewayToken = settings.agentGatewayToken
     webrtcSignalingURL = settings.webrtcSignalingURL
     speakerOutputEnabled = settings.speakerOutputEnabled
     netboxBaseURL = settings.netboxBaseURL
@@ -200,12 +200,12 @@ struct SettingsView: View {
     settings.geminiAPIKey = geminiAPIKey.trimmingCharacters(in: .whitespacesAndNewlines)
     settings.geminiSystemPrompt = geminiSystemPrompt.trimmingCharacters(in: .whitespacesAndNewlines)
     settings.heliosDomain = heliosDomain
-    settings.openClawHost = openClawHost.trimmingCharacters(in: .whitespacesAndNewlines)
-    if let port = Int(openClawPort.trimmingCharacters(in: .whitespacesAndNewlines)) {
-      settings.openClawPort = port
+    settings.agentHost = agentHost.trimmingCharacters(in: .whitespacesAndNewlines)
+    if let port = Int(agentPort.trimmingCharacters(in: .whitespacesAndNewlines)) {
+      settings.agentPort = port
     }
-    settings.openClawHookToken = openClawHookToken.trimmingCharacters(in: .whitespacesAndNewlines)
-    settings.openClawGatewayToken = openClawGatewayToken.trimmingCharacters(in: .whitespacesAndNewlines)
+    settings.agentHookToken = agentHookToken.trimmingCharacters(in: .whitespacesAndNewlines)
+    settings.agentGatewayToken = agentGatewayToken.trimmingCharacters(in: .whitespacesAndNewlines)
     settings.webrtcSignalingURL = webrtcSignalingURL.trimmingCharacters(in: .whitespacesAndNewlines)
     settings.speakerOutputEnabled = speakerOutputEnabled
     settings.netboxBaseURL = netboxBaseURL.trimmingCharacters(in: .whitespacesAndNewlines)

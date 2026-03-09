@@ -44,10 +44,10 @@ enum GeminiConfig {
 
   // User-configurable values (Settings screen overrides, falling back to Secrets.swift)
   static var apiKey: String { SettingsManager.shared.geminiAPIKey }
-  static var openClawHost: String { SettingsManager.shared.openClawHost }
-  static var openClawPort: Int { SettingsManager.shared.openClawPort }
-  static var openClawHookToken: String { SettingsManager.shared.openClawHookToken }
-  static var openClawGatewayToken: String { SettingsManager.shared.openClawGatewayToken }
+  static var agentHost: String { SettingsManager.shared.agentHost }
+  static var agentPort: Int { SettingsManager.shared.agentPort }
+  static var agentHookToken: String { SettingsManager.shared.agentHookToken }
+  static var agentGatewayToken: String { SettingsManager.shared.agentGatewayToken }
 
   static func websocketURL() -> URL? {
     guard apiKey != "YOUR_GEMINI_API_KEY" && !apiKey.isEmpty else { return nil }
@@ -58,9 +58,9 @@ enum GeminiConfig {
     return apiKey != "YOUR_GEMINI_API_KEY" && !apiKey.isEmpty
   }
 
-  static var isOpenClawConfigured: Bool {
-    return openClawGatewayToken != "YOUR_OPENCLAW_GATEWAY_TOKEN"
-      && !openClawGatewayToken.isEmpty
-      && openClawHost != "http://YOUR_MAC_HOSTNAME.local"
+  static var isAgentConfigured: Bool {
+    return agentGatewayToken != "YOUR_AGENT_GATEWAY_TOKEN"
+      && !agentGatewayToken.isEmpty
+      && agentHost != "http://YOUR_MAC_HOSTNAME.local"
   }
 }

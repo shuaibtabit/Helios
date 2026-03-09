@@ -42,30 +42,30 @@ fun SettingsScreen(
 ) {
     var geminiAPIKey by remember { mutableStateOf(SettingsManager.geminiAPIKey) }
     var systemPrompt by remember { mutableStateOf(SettingsManager.geminiSystemPrompt) }
-    var openClawHost by remember { mutableStateOf(SettingsManager.openClawHost) }
-    var openClawPort by remember { mutableStateOf(SettingsManager.openClawPort.toString()) }
-    var openClawHookToken by remember { mutableStateOf(SettingsManager.openClawHookToken) }
-    var openClawGatewayToken by remember { mutableStateOf(SettingsManager.openClawGatewayToken) }
+    var agentHost by remember { mutableStateOf(SettingsManager.agentHost) }
+    var agentPort by remember { mutableStateOf(SettingsManager.agentPort.toString()) }
+    var agentHookToken by remember { mutableStateOf(SettingsManager.agentHookToken) }
+    var agentGatewayToken by remember { mutableStateOf(SettingsManager.agentGatewayToken) }
     var webrtcSignalingURL by remember { mutableStateOf(SettingsManager.webrtcSignalingURL) }
     var showResetDialog by remember { mutableStateOf(false) }
 
     fun save() {
         SettingsManager.geminiAPIKey = geminiAPIKey.trim()
         SettingsManager.geminiSystemPrompt = systemPrompt.trim()
-        SettingsManager.openClawHost = openClawHost.trim()
-        openClawPort.trim().toIntOrNull()?.let { SettingsManager.openClawPort = it }
-        SettingsManager.openClawHookToken = openClawHookToken.trim()
-        SettingsManager.openClawGatewayToken = openClawGatewayToken.trim()
+        SettingsManager.agentHost = agentHost.trim()
+        agentPort.trim().toIntOrNull()?.let { SettingsManager.agentPort = it }
+        SettingsManager.agentHookToken = agentHookToken.trim()
+        SettingsManager.agentGatewayToken = agentGatewayToken.trim()
         SettingsManager.webrtcSignalingURL = webrtcSignalingURL.trim()
     }
 
     fun reload() {
         geminiAPIKey = SettingsManager.geminiAPIKey
         systemPrompt = SettingsManager.geminiSystemPrompt
-        openClawHost = SettingsManager.openClawHost
-        openClawPort = SettingsManager.openClawPort.toString()
-        openClawHookToken = SettingsManager.openClawHookToken
-        openClawGatewayToken = SettingsManager.openClawGatewayToken
+        agentHost = SettingsManager.agentHost
+        agentPort = SettingsManager.agentPort.toString()
+        agentHookToken = SettingsManager.agentHookToken
+        agentGatewayToken = SettingsManager.agentGatewayToken
         webrtcSignalingURL = SettingsManager.webrtcSignalingURL
     }
 
@@ -108,31 +108,31 @@ fun SettingsScreen(
                 textStyle = MaterialTheme.typography.bodyMedium.copy(fontFamily = FontFamily.Monospace),
             )
 
-            // OpenClaw section
-            SectionHeader("OpenClaw")
+            // Agent Gateway section
+            SectionHeader("Agent Gateway")
             MonoTextField(
-                value = openClawHost,
-                onValueChange = { openClawHost = it },
+                value = agentHost,
+                onValueChange = { agentHost = it },
                 label = "Host",
                 placeholder = "http://your-mac.local",
                 keyboardType = KeyboardType.Uri,
             )
             MonoTextField(
-                value = openClawPort,
-                onValueChange = { openClawPort = it },
+                value = agentPort,
+                onValueChange = { agentPort = it },
                 label = "Port",
                 placeholder = "18789",
                 keyboardType = KeyboardType.Number,
             )
             MonoTextField(
-                value = openClawHookToken,
-                onValueChange = { openClawHookToken = it },
+                value = agentHookToken,
+                onValueChange = { agentHookToken = it },
                 label = "Hook Token",
                 placeholder = "Hook token",
             )
             MonoTextField(
-                value = openClawGatewayToken,
-                onValueChange = { openClawGatewayToken = it },
+                value = agentGatewayToken,
+                onValueChange = { agentGatewayToken = it },
                 label = "Gateway Token",
                 placeholder = "Gateway auth token",
             )

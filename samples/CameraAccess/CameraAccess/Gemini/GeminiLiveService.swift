@@ -220,8 +220,8 @@ class GeminiLiveService: ObservableObject {
         "outputAudioTranscription": [:] as [String: Any]
     ]
 
-    // Only declare tools if OpenClaw gateway is configured
-    if GeminiConfig.isOpenClawConfigured {
+    // Only declare tools if Helios Agent gateway is configured
+    if GeminiConfig.isAgentConfigured {
       setupConfig["tools"] = [
         ["functionDeclarations": ToolDeclarations.allDeclarations()]
       ]

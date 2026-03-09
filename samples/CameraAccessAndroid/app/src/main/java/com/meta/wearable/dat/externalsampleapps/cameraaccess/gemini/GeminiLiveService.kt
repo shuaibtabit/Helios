@@ -3,9 +3,9 @@ package com.meta.wearable.dat.externalsampleapps.cameraaccess.gemini
 import android.graphics.Bitmap
 import android.util.Base64
 import android.util.Log
-import com.meta.wearable.dat.externalsampleapps.cameraaccess.openclaw.GeminiToolCall
-import com.meta.wearable.dat.externalsampleapps.cameraaccess.openclaw.GeminiToolCallCancellation
-import com.meta.wearable.dat.externalsampleapps.cameraaccess.openclaw.ToolDeclarations
+import com.meta.wearable.dat.externalsampleapps.cameraaccess.heliosagent.GeminiToolCall
+import com.meta.wearable.dat.externalsampleapps.cameraaccess.heliosagent.GeminiToolCallCancellation
+import com.meta.wearable.dat.externalsampleapps.cameraaccess.heliosagent.ToolDeclarations
 import java.io.ByteArrayOutputStream
 import java.util.Timer
 import java.util.TimerTask
